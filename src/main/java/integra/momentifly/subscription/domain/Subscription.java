@@ -7,6 +7,10 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+// * If we delete a user, should the database automatically remove the users' subscriptions?
+ *
+ */
 @Entity
 @Table(name="subscriptions")
 @Getter
@@ -18,22 +22,20 @@ public class Subscription {
 //this property is not in the diagram but was added for database reasons (it's the subscription ID)
 
     /**
-     * many subscriptions to a single user, so you have to think like if multiple objects of this class can be assigned to an object
-     * of a different type, not the other way around
-     * the FetchType is just a way to retrieve data from the object
-     * LAZY-it's like asking: "Hey do you know anything about X", and they give you answers (data is loaded only if you request for it
-     * e.g. subscription.getUser()).
-     * EAGER-2nd way of retrieving, someone tells you something without asking for it. (data is loaded immediately upon object creation).
-     */
+     *this is part of the JPA course
+     * */
     @ManyToOne(fetch=FetchType.LAZY)
+    /*this is a way to make the id of the user a foreign key of the table based on the diagram with the dependence relationship*/
     @JoinColumn(name="user_id", nullable = false)
-//this is a way to make the id of the user a foreign key of the table based on the diagram with the dependance relationship
+
     private User user;
-//both are objects not primitive types so the instances can have null values
 
-    private double cost;
+    @Column(nullable = false)
+    private Double cost;
 
+    @Column(nullable = false)
     private String name;
 
+    @Column(name="end_date")
     private LocalDateTime endDate;
 }
