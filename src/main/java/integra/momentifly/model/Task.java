@@ -9,16 +9,16 @@ import java.util.UUID;
 @Entity
 @Table(name="task")
 public class Task {
-    enum DifficultyEnum { EASY, MEDIUM, HARD }
 
     @Getter
     @Id
     @GeneratedValue(strategy= GenerationType.UUID)
     private UUID id;
 
-    // join column, many to one relationship here
-    @Getter
-    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    // setter for now but remove later
+    // join column, many to one relationship here but only once the user model is finished
+    @Getter @Setter
+    @Column(columnDefinition = "uuid", nullable = false)
     private UUID userId;
 
     @Getter @Setter
@@ -37,4 +37,3 @@ public class Task {
     @Getter @Setter
     private Boolean completed  = false;
 }
-
