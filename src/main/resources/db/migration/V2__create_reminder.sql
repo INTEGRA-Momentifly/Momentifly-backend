@@ -1,8 +1,8 @@
 CREATE TABLE reminder (
     id BIGSERIAL PRIMARY KEY,
-    userId BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     description VARCHAR(250),
-    reminderDate TIMESTAMP,
+    reminder_date TIMESTAMP,
     done BOOLEAN,
     recurrence VARCHAR(30)
 );
