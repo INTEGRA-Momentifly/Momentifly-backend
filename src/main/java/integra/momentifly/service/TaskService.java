@@ -6,6 +6,8 @@ import integra.momentifly.model.Task;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -14,6 +16,21 @@ public class TaskService {
 
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
+    }
+
+    // get all tasks for user, but in order
+    // first group by difficulty, then order by due date
+    // earlier => higher priority (date1 < date2 => date1 first)
+    public List<Task> getAllTasksForUser(UUID userId) {
+        return taskRepository.findByUserId(userId).stream()
+                .sorted(Comparator.comparing((Task t) -> t.getDifficulty().ordinal())
+                        .thenComparing(Task::getDueDate))
+                .toList();
+    }
+
+    public Task getTaskById(UUID taskId) {
+        return taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
     }
 
     public Task addTask(UUID userId, String description, LocalDate dueDate, DifficultyEnum difficulty) {
@@ -32,22 +49,12 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public void removeTask(UUID id) {
-        if (!taskRepository.existsById(id))
+    public void removeTask(UUID taskId) {
+        if (!taskRepository.existsById(taskId))
             throw new RuntimeException("Task not found!");
-        taskRepository.deleteById(id);
+        taskRepository.deleteById(taskId);
     }
 
-
-    public Task completeTask(UUID taskId) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        task.setCompleted(true);
-        return taskRepository.save(task);
-    }
-
-    // update task description / dueDate / diff
     public Task updateTask(UUID taskId, String description, LocalDate dueDate,  DifficultyEnum difficulty) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
@@ -61,14 +68,13 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    // first group by difficulty, then order by due date
-    // earlier => higher priority (date1 < date2 => date1 first)
-    public void orderTasks() {
+    public Task completeTask(UUID taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
 
+        task.setCompleted(true);
+        return taskRepository.save(task);
     }
 
-    // might also need a function that constantly checks for tasks that
-    // have already reached their dueDate and remove them / have some container
-    // with tasks that are not completed => function call everytime on page load / refresh??
-    // (user can still update their due date if they want to still do that task ig)
+    // function to find overdue tasks that the user did not complete??
 }

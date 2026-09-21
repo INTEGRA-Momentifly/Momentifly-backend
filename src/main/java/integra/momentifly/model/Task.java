@@ -15,7 +15,7 @@ public class Task {
     @GeneratedValue(strategy= GenerationType.UUID)
     private UUID id;
 
-    // setter for now but remove later
+    // setter for now but maybe remove later
     // join column, many to one relationship here but only once the user model is finished
     @Getter @Setter
     @Column(columnDefinition = "uuid", nullable = false)
