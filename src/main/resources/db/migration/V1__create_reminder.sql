@@ -1,5 +1,5 @@
 CREATE TABLE reminder (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id BIGINT NOT NULL,
     description VARCHAR(250),
     reminder_date TIMESTAMP,

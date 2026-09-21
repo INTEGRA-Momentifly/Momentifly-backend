@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ReminderService {
@@ -19,7 +20,7 @@ public class ReminderService {
         return reminderRepository.findAll();
     }
 
-    public Optional<Reminder> findById(Long id) {
+    public Optional<Reminder> findById(UUID id) {
         return reminderRepository.findById(id);
     }
 
@@ -31,7 +32,7 @@ public class ReminderService {
         return reminderRepository.save(reminder);
     }
 
-    public void deleteById(Long id) {
+    public void deleteById(UUID id) {
         reminderRepository.deleteById(id);
     }
 }
