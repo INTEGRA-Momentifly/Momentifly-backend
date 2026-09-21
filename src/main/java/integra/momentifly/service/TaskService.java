@@ -18,14 +18,12 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    // get all tasks for user, but in order
-    // first group by difficulty, then order by due date
-    // earlier => higher priority (date1 < date2 => date1 first)
+    public List<Task> getAllTasks() {
+        return taskRepository.findAll();
+    }
+
     public List<Task> getAllTasksForUser(UUID userId) {
-        return taskRepository.findByUserId(userId).stream()
-                .sorted(Comparator.comparing((Task t) -> t.getDifficulty().ordinal())
-                        .thenComparing(Task::getDueDate))
-                .toList();
+        return taskRepository.findByUserId(userId);
     }
 
     public Task getTaskById(UUID taskId) {
@@ -67,14 +65,4 @@ public class TaskService {
         task.setDifficulty(difficulty);
         return taskRepository.save(task);
     }
-
-    public Task completeTask(UUID taskId) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        task.setCompleted(true);
-        return taskRepository.save(task);
-    }
-
-    // function to find overdue tasks that the user did not complete??
 }
