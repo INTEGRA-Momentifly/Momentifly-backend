@@ -2,10 +2,13 @@ package integra.momentifly.subscription.service;
 
 import integra.momentifly.subscription.domain.Subscription;
 import integra.momentifly.subscription.repository.SubscriptionRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
+@Service
 public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
 
@@ -17,7 +20,7 @@ public class SubscriptionService {
         return subscriptionRepository.save(subscription);
     }
 
-    public Subscription updateSubscription(Long id, Subscription updatedSubscription){
+    public Subscription updateSubscription(UUID id, Subscription updatedSubscription){
         Subscription existing = subscriptionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Subscription not found with id: " + id));
         existing.setName(updatedSubscription.getName());
@@ -28,11 +31,11 @@ public class SubscriptionService {
         return subscriptionRepository.save(existing);
     }
 
-    public void deleteSubscription(Long id){
+    public void deleteSubscription(UUID id){
         subscriptionRepository.deleteById(id);
     }
 
-    public Optional<Subscription> findSubscriptionById(Long id){
+    public Optional<Subscription> findSubscriptionById(UUID id){
         return subscriptionRepository.findById(id);
     }
 
@@ -41,7 +44,7 @@ public class SubscriptionService {
     }
 
     //this is based on the diagram suggested method
-    public List<Subscription> getSubscriptionsByUserId(Long user_id){
+    public List<Subscription> getSubscriptionsByUserId(UUID user_id){
         return subscriptionRepository.findByUser_Id(user_id);
     }
 }

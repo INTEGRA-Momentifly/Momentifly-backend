@@ -2,11 +2,11 @@ package integra.momentifly.subscription.repository;
 
 import integra.momentifly.subscription.domain.Subscription;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
+public interface SubscriptionRepository extends JpaRepository<Subscription, UUID> {
     /**all the other functions are by default implemented by JPA
      * save()
      * delete()
@@ -15,5 +15,5 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
      * findById()
      * deleteById();
      */
-    List<Subscription> findByUser_Id(Long userId);
+    List<Subscription> findByUser_Id(UUID userId);
 }
