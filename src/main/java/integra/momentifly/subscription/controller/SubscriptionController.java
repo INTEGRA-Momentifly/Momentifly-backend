@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/subscriptions")
@@ -22,12 +23,12 @@ public class SubscriptionController {
     }
 
     @PutMapping("/{id}")
-    public Subscription updateSubscription(@PathVariable Long id, @RequestBody Subscription updatedSubscription){
+    public Subscription updateSubscription(@PathVariable UUID id, @RequestBody Subscription updatedSubscription){
         return subscriptionService.updateSubscription(id, updatedSubscription);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Subscription> findSubscriptionById(@PathVariable Long id){
+    public ResponseEntity<Subscription> findSubscriptionById(@PathVariable UUID id){
         return subscriptionService.findSubscriptionById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -39,13 +40,13 @@ public class SubscriptionController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSubscription(@PathVariable Long id){
+    public ResponseEntity<Void> deleteSubscription(@PathVariable UUID id){
         subscriptionService.deleteSubscription(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/user/{userId}")
-    public List<Subscription> getSubscriptionsByUserId(@PathVariable Long userId){
+    public List<Subscription> getSubscriptionsByUserId(@PathVariable UUID userId){
         return subscriptionService.getSubscriptionsByUserId(userId);
     }
 }
