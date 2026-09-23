@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 public class ReminderDtoIn {
 
     @NotNull
-    private Long userId;
+    private UUID userId;
 
     @NotBlank
     private String description;

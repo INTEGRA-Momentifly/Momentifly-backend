@@ -41,7 +41,7 @@ public class ReminderController {
     }
 
     @GetMapping("/user/{userId}")
-    public List<ReminderDtoOut> findByUserId(@PathVariable Long userId) {
+    public List<ReminderDtoOut> findByUserId(@PathVariable UUID userId) {
         return reminderService.findByUserId(userId)
                 .stream()
                 .map(mapper::toDto)

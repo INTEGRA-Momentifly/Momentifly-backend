@@ -24,7 +24,7 @@ public class ReminderService {
         return reminderRepository.findById(id);
     }
 
-    public List<Reminder> findByUserId(Long userId) {
+    public List<Reminder> findByUserId(UUID userId) {
         return reminderRepository.findByUserId(userId);
     }
 

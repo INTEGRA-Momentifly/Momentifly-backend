@@ -15,6 +15,8 @@ public class ReminderDtoOut {
 
     private UUID id;
 
+    private UUID userId;
+
     private String description;
 
     private LocalDateTime reminderDate;

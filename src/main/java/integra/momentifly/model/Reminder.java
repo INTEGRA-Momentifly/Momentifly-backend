@@ -15,7 +15,7 @@ public class Reminder {
     private UUID id;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private UUID userId;
 
     @Column(name = "description")
     private String description;
