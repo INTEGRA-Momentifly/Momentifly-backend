@@ -35,6 +35,10 @@ dependencies {
 
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
+
+
+    testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind")
 }
 
 tasks.withType<Test> {
