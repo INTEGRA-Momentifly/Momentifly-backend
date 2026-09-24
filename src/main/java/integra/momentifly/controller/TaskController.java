@@ -23,12 +23,12 @@ public class TaskController {
         return taskService.getAllTasks();
     }
 
-    @GetMapping
+    @GetMapping("/user")
     public List<Task> getTasksForUser(@RequestParam UUID userId) {
         return taskService.getAllTasksForUser(userId);
     }
 
-    @GetMapping
+    @GetMapping("/task")
     public Task getTask(@RequestParam UUID taskId) {
         return  taskService.getTaskById(taskId);
     }
