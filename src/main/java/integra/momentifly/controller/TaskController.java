@@ -4,6 +4,8 @@ import integra.momentifly.dto.CreateTaskRequest;
 import integra.momentifly.dto.UpdateTaskRequest;
 import integra.momentifly.model.Task;
 import integra.momentifly.service.TaskService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,43 +16,62 @@ import java.util.UUID;
 public class TaskController {
     private final TaskService taskService;
 
-    TaskController(TaskService taskService) {
+    public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
 
     @GetMapping
-    public List<Task> getAllTasks() {
-        return taskService.getAllTasks();
+    public ResponseEntity<?> getAllTasks() {
+        return ResponseEntity.ok(taskService.getAllTasks());
     }
 
     @GetMapping("/user")
-    public List<Task> getTasksForUser(@RequestParam UUID userId) {
-        return taskService.getAllTasksForUser(userId);
+    public ResponseEntity<?> getTasksForUser(@RequestParam UUID userId) {
+        return ResponseEntity.ok(taskService.getAllTasksForUser(userId));
     }
 
     @GetMapping("/task")
-    public Task getTask(@RequestParam UUID taskId) {
-        return  taskService.getTaskById(taskId);
+    public ResponseEntity<?> getTask(@RequestParam UUID taskId) {
+        try {
+            return ResponseEntity.ok(taskService.getTaskById(taskId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @PostMapping
-    public Task createTask(@RequestBody CreateTaskRequest request) {
-        return taskService.addTask(request.getUserId(),
-                request.getDescription(),
-                request.getDueDate(),
-                request.getDifficulty());
+    public ResponseEntity<?> createTask(@RequestBody CreateTaskRequest request) {
+        try {
+            Task task = taskService.addTask(request.getUserId(), request.getDescription(),
+                    request.getDueDate(), request.getDifficulty());
+            return ResponseEntity.ok(task);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping
-    public void deleteTask(@RequestParam UUID taskId) {
-        taskService.removeTask(taskId);
+    public ResponseEntity<?> deleteTask(@RequestParam UUID taskId) {
+        try {
+            taskService.removeTask(taskId);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @PutMapping
-    public Task updateTask(@RequestBody UpdateTaskRequest request) {
-        return taskService.updateTask(request.getTaskId(),
-                request.getDescription(),
-                request.getDueDate(),
-                request.getDifficulty());
+    public ResponseEntity<?> updateTask(@RequestBody UpdateTaskRequest request) {
+        try{
+            return ResponseEntity.ok(taskService.updateTask(request.getTaskId(),
+                    request.getDescription(),
+                    request.getDueDate(),
+                    request.getDifficulty()));
+        } catch(IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+
     }
 }
