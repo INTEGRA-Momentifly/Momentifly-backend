@@ -49,7 +49,7 @@ public class TaskService {
 
     public void removeTask(UUID taskId) {
         if (!taskRepository.existsById(taskId))
-            throw new RuntimeException("Task not found!");
+            throw new RuntimeException("Task not found");
         taskRepository.deleteById(taskId);
     }
 
