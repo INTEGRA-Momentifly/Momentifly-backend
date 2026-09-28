@@ -32,7 +32,7 @@ public class Task {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Getter @Setter
-    private DifficultyEnum difficulty;
+    private Difficulty difficulty;
 
     @Getter @Setter
     private Boolean completed  = false;

@@ -2,7 +2,7 @@ package integra.momentifly.controller;
 
 import integra.momentifly.dto.CreateTaskRequest;
 import integra.momentifly.dto.UpdateTaskRequest;
-import integra.momentifly.model.DifficultyEnum;
+import integra.momentifly.model.Difficulty;
 import integra.momentifly.model.Task;
 import integra.momentifly.service.TaskService;
 import org.junit.jupiter.api.Test;
@@ -83,7 +83,7 @@ public class TaskControllerTest {
         request.setUserId(UUID.randomUUID());
         request.setDescription("New task");
         request.setDueDate(LocalDate.of(2026, 10, 1));
-        request.setDifficulty(DifficultyEnum.MEDIUM);
+        request.setDifficulty(Difficulty.MEDIUM);
 
         Task createdTask = new Task();
         createdTask.setDescription("Created task");
@@ -129,7 +129,7 @@ public class TaskControllerTest {
         request.setTaskId(UUID.randomUUID());
         request.setDescription("New task");
         request.setDueDate(LocalDate.of(2026, 10, 1));
-        request.setDifficulty(DifficultyEnum.MEDIUM);
+        request.setDifficulty(Difficulty.MEDIUM);
 
         Task updatedTask = new  Task();
         when(taskService.updateTask(any(), any(), any(), any())).thenReturn(updatedTask);

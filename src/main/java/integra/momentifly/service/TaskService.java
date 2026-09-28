@@ -1,12 +1,11 @@
 package integra.momentifly.service;
 
-import integra.momentifly.model.DifficultyEnum;
+import integra.momentifly.model.Difficulty;
 import integra.momentifly.repository.TaskRepository;
 import integra.momentifly.model.Task;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,7 +30,7 @@ public class TaskService {
                 .orElseThrow(() -> new RuntimeException("Task not found"));
     }
 
-    public Task addTask(UUID userId, String description, LocalDate dueDate, DifficultyEnum difficulty) {
+    public Task addTask(UUID userId, String description, LocalDate dueDate, Difficulty difficulty) {
 //        ONCE THERE IS A USER CLASS AND MANY-TO-ONE IS IMPLEMENTED:
 //        User user = userRepository.findById(userId)
 //                .orElseThrow(() -> new RuntimeException("User not found"));
@@ -53,7 +52,7 @@ public class TaskService {
         taskRepository.deleteById(taskId);
     }
 
-    public Task updateTask(UUID taskId, String description, LocalDate dueDate,  DifficultyEnum difficulty) {
+    public Task updateTask(UUID taskId, String description, LocalDate dueDate,  Difficulty difficulty) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
