@@ -1,3 +1,3 @@
 package integra.momentifly.model;
 
-public enum DifficultyEnum { EASY, MEDIUM, HARD }
+public enum Difficulty { EASY, MEDIUM, HARD }
