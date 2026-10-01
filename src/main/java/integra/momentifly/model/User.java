@@ -1,4 +1,4 @@
-package integra.momentifly.user.domain;
+package integra.momentifly.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
