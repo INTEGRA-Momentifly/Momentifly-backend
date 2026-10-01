@@ -1,8 +1,10 @@
-package integra.momentifly.subscription.controller;
+package integra.momentifly.controller;
 
-import integra.momentifly.subscription.domain.Subscription;
-import integra.momentifly.subscription.service.SubscriptionService;
-import integra.momentifly.user.domain.User;
+import integra.momentifly.dto.CreateSubscriptionRequest;
+import integra.momentifly.dto.UpdateSubscriptionRequest;
+import integra.momentifly.model.Subscription;
+import integra.momentifly.service.SubscriptionService;
+import integra.momentifly.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -53,25 +56,40 @@ class SubscriptionControllerTest {
     @Test
     @DisplayName("POST /api/subscriptions creates and returns new subscription")
     void createSubscription_Success() {
-        when(subscriptionService.createSubscription(any(Subscription.class))).thenReturn(sampleSubscription);
+        CreateSubscriptionRequest request = new CreateSubscriptionRequest();
+        request.setUserId(userId);
+        request.setName("spotify");
+        request.setCost(9.99);
+        request.setEndDate(sampleSubscription.getEndDate());
 
-        Subscription result = subscriptionController.createSubscription(sampleSubscription);
+        when(subscriptionService.createSubscription(any(CreateSubscriptionRequest.class)))
+                .thenReturn(sampleSubscription);
+
+        Subscription result = subscriptionController.createSubscription(request);
 
         assertNotNull(result);
         assertEquals("spotify", result.getName());
-        verify(subscriptionService, times(1)).createSubscription(sampleSubscription);
+        assertEquals(9.99, result.getCost());
+
+        verify(subscriptionService, times(1)).createSubscription(any(CreateSubscriptionRequest.class));
     }
 
     @Test
-    @DisplayName("PUT /api/subscriptions/{id} updates and returns subscription")
+    @DisplayName("PUT /api/subscriptions/{id} updates and returns updated subscription")
     void updateSubscription_Success() {
-        when(subscriptionService.updateSubscription(eq(subscriptionId), any(Subscription.class))).thenReturn(sampleSubscription);
+        UUID subscriptionId = UUID.randomUUID();
 
-        Subscription result = subscriptionController.updateSubscription(subscriptionId, sampleSubscription);
+        UpdateSubscriptionRequest updateRequest = new UpdateSubscriptionRequest();
+        updateRequest.setName("spotify-premium");
+        updateRequest.setCost(12.99);
+
+        when(subscriptionService.updateSubscription(eq(subscriptionId), any(UpdateSubscriptionRequest.class)))
+                .thenReturn(sampleSubscription);
+
+        Subscription result = subscriptionController.updateSubscription(subscriptionId, updateRequest);
 
         assertNotNull(result);
-        assertEquals("spotify", result.getName());
-        verify(subscriptionService, times(1)).updateSubscription(subscriptionId, sampleSubscription);
+        verify(subscriptionService, times(1)).updateSubscription(eq(subscriptionId), any(UpdateSubscriptionRequest.class));
     }
 
     @Test
@@ -89,13 +107,13 @@ class SubscriptionControllerTest {
 
     @Test
     @DisplayName("GET subscription by ID returns 200 OK with Subscription body when found")
-    void findSubscriptionByIdSuccess() {
+    void getSubscriptionByIdSuccess() {
         //Arrange
         when(subscriptionService.findSubscriptionById(subscriptionId))
                 .thenReturn(Optional.of(sampleSubscription));
 
         //Act
-        ResponseEntity<Subscription> response = subscriptionController.findSubscriptionById(subscriptionId);
+        ResponseEntity<Subscription> response = subscriptionController.getSubscriptionById(subscriptionId);
 
         //Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -107,37 +125,39 @@ class SubscriptionControllerTest {
 
     @Test
     @DisplayName("GET subscription by ID returns 404 Not Found when missing")
-    void findSubscriptionById_NotFound(){
+    void getSubscriptionById_NotFound(){
         when(subscriptionService.findSubscriptionById(subscriptionId))
                 .thenReturn(Optional.empty());
 
-        ResponseEntity<Subscription> response = subscriptionController.findSubscriptionById(subscriptionId);
+        ResponseEntity<Subscription> response = subscriptionController.getSubscriptionById(subscriptionId);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
     }
 
     @Test
-    @DisplayName("GET /api/subscriptions returns all subscriptions")
-    void getAllSubscriptions_Success() {
-        when(subscriptionService.getAllSubscriptions()).thenReturn(java.util.List.of(sampleSubscription));
+    @DisplayName("GET /api/subscriptions without query param returns all subscriptions")
+    void getAllSubscriptions_WithoutUserId_ReturnsAll() {
+        when(subscriptionService.getAllSubscriptions()).thenReturn(List.of(sampleSubscription));
 
-        java.util.List<Subscription> result = subscriptionController.getAllSubscriptions();
+        List<Subscription> result = subscriptionController.getAllSubscriptions(null);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         verify(subscriptionService, times(1)).getAllSubscriptions();
+        verify(subscriptionService, never()).getSubscriptionsByUserId(any());
     }
 
     @Test
-    @DisplayName("GET /api/subscriptions/user/{userId} returns user subscriptions")
-    void getSubscriptionsByUserId_Success() {
-        when(subscriptionService.getSubscriptionsByUserId(userId)).thenReturn(java.util.List.of(sampleSubscription));
+    @DisplayName("GET /api/subscriptions?userId=... returns filtered subscriptions for user")
+    void getAllSubscriptions_WithUserId_ReturnsFiltered() {
+        when(subscriptionService.getSubscriptionsByUserId(userId)).thenReturn(List.of(sampleSubscription));
 
-        java.util.List<Subscription> result = subscriptionController.getSubscriptionsByUserId(userId);
+        List<Subscription> result = subscriptionController.getAllSubscriptions(userId);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         verify(subscriptionService, times(1)).getSubscriptionsByUserId(userId);
+        verify(subscriptionService, never()).getAllSubscriptions();
     }
 }

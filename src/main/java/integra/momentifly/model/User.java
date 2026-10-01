@@ -1,4 +1,4 @@
-package integra.momentifly.user.domain;
+package integra.momentifly.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
-@Table(name="users")
+@Table(name="user")
 @Getter
 @Setter
 public class User {

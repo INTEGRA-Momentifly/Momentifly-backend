@@ -1,13 +1,14 @@
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: momentifly-postgresup
+    container_name: momentifly-postgres
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: momentifly
       POSTGRES_USER: postgres-user
       POSTGRES_PASSWORD: SecurePassword123!
-    ports:
-      - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

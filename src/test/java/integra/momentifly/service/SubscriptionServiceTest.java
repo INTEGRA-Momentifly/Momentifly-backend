@@ -1,7 +1,10 @@
-package integra.momentifly.subscription.service;
+package integra.momentifly.service;
 
-import integra.momentifly.subscription.domain.Subscription;
-import integra.momentifly.subscription.repository.SubscriptionRepository;
+import integra.momentifly.dto.CreateSubscriptionRequest;
+import integra.momentifly.dto.UpdateSubscriptionRequest;
+import integra.momentifly.service.SubscriptionService;
+import integra.momentifly.model.Subscription;
+import integra.momentifly.repository.SubscriptionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,54 +27,63 @@ class SubscriptionServiceTest {
 
     @Test
     void createSubscription_Success() {
-        Subscription newSubscription = new Subscription();
-        newSubscription.setName("Spotify");
-        newSubscription.setCost(9.99);
+        CreateSubscriptionRequest request = new CreateSubscriptionRequest();
+        request.setUserId(UUID.randomUUID());
+        request.setName("Spotify");
+        request.setCost(9.99);
 
         Subscription savedSubscription = new Subscription();
         savedSubscription.setId(UUID.randomUUID());
         savedSubscription.setName("Spotify");
         savedSubscription.setCost(9.99);
 
-        when(subscriptionRepository.save(newSubscription)).thenReturn(savedSubscription);
+        when(subscriptionRepository.save(any(Subscription.class))).thenReturn(savedSubscription);
 
-        Subscription result = subscriptionService.createSubscription(newSubscription);
+        Subscription result = subscriptionService.createSubscription(request);
 
         assertNotNull(result);
         assertNotNull(result.getId());
         assertEquals("Spotify", result.getName());
         assertEquals(9.99, result.getCost());
-        verify(subscriptionRepository).save(newSubscription);
+        verify(subscriptionRepository).save(any(Subscription.class));
     }
 
     @Test
     void updateSubscription_WhenExists_UpdatesFieldsAndSaves() {
         UUID id = UUID.randomUUID();
-        Subscription existing = new Subscription();
-        existing.setName("Old Name");
 
-        Subscription updatedInfo = new Subscription();
-        updatedInfo.setName("New Name");
-        updatedInfo.setCost(12.99);
+        Subscription existingSubscription = new Subscription();
+        existingSubscription.setId(id);
+        existingSubscription.setName("Old Name");
+        existingSubscription.setCost(9.99);
 
-        when(subscriptionRepository.findById(id)).thenReturn(Optional.of(existing));
-        when(subscriptionRepository.save(existing)).thenReturn(existing);
+        UpdateSubscriptionRequest updateSubscriptionRequest = new UpdateSubscriptionRequest();
+        updateSubscriptionRequest.setName("New Name");
+        updateSubscriptionRequest.setCost(12.99);
 
-        Subscription result = subscriptionService.updateSubscription(id, updatedInfo);
+        when(subscriptionRepository.findById(id)).thenReturn(Optional.of(existingSubscription));
+        when(subscriptionRepository.save(existingSubscription)).thenReturn(existingSubscription);
 
-        // Assert
+        Subscription result = subscriptionService.updateSubscription(id, updateSubscriptionRequest);
+
+        assertNotNull(result);
         assertEquals("New Name", result.getName());
         assertEquals(12.99, result.getCost());
+        verify(subscriptionRepository).findById(id);
+        verify(subscriptionRepository).save(existingSubscription);
     }
 
     @Test
     void updateSubscription_WhenNotFound_ThrowsException() {
         UUID id = UUID.randomUUID();
+        UpdateSubscriptionRequest updateSubscriptionRequest = new UpdateSubscriptionRequest();
+        updateSubscriptionRequest.setName("New Name");
+
         when(subscriptionRepository.findById(id)).thenReturn(Optional.empty());
 
         RuntimeException exception = assertThrows(
                 RuntimeException.class,
-                () -> subscriptionService.updateSubscription(id, new Subscription())
+                () -> subscriptionService.updateSubscription(id, updateSubscriptionRequest)
         );
 
         assertTrue(exception.getMessage().contains("Subscription not found"));
@@ -129,11 +141,11 @@ class SubscriptionServiceTest {
     void getSubscriptionsByUserId_Success() {
         UUID userId = UUID.randomUUID();
         Subscription subscription = new Subscription();
-        when(subscriptionRepository.findByUser_Id(userId)).thenReturn(java.util.List.of(subscription));
+        when(subscriptionRepository.findByUserId(userId)).thenReturn(java.util.List.of(subscription));
 
         java.util.List<Subscription> result = subscriptionService.getSubscriptionsByUserId(userId);
 
         assertEquals(1, result.size());
-        verify(subscriptionRepository).findByUser_Id(userId);
+        verify(subscriptionRepository).findByUserId(userId);
     }
 }
