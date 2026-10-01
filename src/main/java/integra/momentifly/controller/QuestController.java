@@ -1,6 +1,8 @@
 package integra.momentifly.controller;
 
 
+import integra.momentifly.dto.CreateQuestRequest;
+import integra.momentifly.dto.UpdateQuestRequest;
 import integra.momentifly.model.Quest;
 import integra.momentifly.service.QuestService;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +16,11 @@ import java.util.UUID;
 @RequestMapping("/api/quests")
 @RequiredArgsConstructor
 public class QuestController {
+
     private final QuestService questService;
 
     @PostMapping
-    public ResponseEntity<Quest> createQuest(@RequestBody Quest quest) {
+    public ResponseEntity<Quest> createQuest(@RequestBody CreateQuestRequest quest) {
         return ResponseEntity.ok(questService.createQuest(quest));
     }
 
@@ -34,7 +37,7 @@ public class QuestController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Quest> updateQuest(@PathVariable UUID id, @RequestBody Quest quest) {
+    public ResponseEntity<Quest> updateQuest(@PathVariable UUID id, @RequestBody UpdateQuestRequest quest) {
         try {
             return ResponseEntity.ok(questService.updateQuest(id, quest));
         } catch (RuntimeException e) {

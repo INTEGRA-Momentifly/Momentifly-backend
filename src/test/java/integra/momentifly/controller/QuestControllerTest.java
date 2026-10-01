@@ -1,5 +1,7 @@
 package integra.momentifly.controller;
 
+import integra.momentifly.dto.CreateQuestRequest;
+import integra.momentifly.dto.UpdateQuestRequest;
 import integra.momentifly.model.Quest;
 import integra.momentifly.service.QuestService;
 import org.junit.jupiter.api.Test;
@@ -30,11 +32,15 @@ class QuestControllerTest {
 
     @Test
     void createQuest_ShouldReturn200AndQuest() {
-        Quest quest = new Quest(null, "Task", 15.0);
-        Quest savedQuest = new Quest(UUID.randomUUID(), "Task", 15.0);
-        when(questService.createQuest(any(Quest.class))).thenReturn(savedQuest);
 
-        ResponseEntity<Quest> response = questController.createQuest(quest);
+        CreateQuestRequest createQuestRequest = new CreateQuestRequest();
+        createQuestRequest.setDescription("Task");
+        createQuestRequest.setPoints(15.0);
+
+        Quest savedQuest = new Quest(UUID.randomUUID(), "Task", 15.0);
+        when(questService.createQuest(any(CreateQuestRequest.class))).thenReturn(savedQuest);
+
+        ResponseEntity<Quest> response = questController.createQuest(createQuestRequest);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(savedQuest, response.getBody());
@@ -76,16 +82,19 @@ class QuestControllerTest {
     @Test
     void updateQuest_ShouldReturn200_WhenUpdated() {
         UUID id = UUID.randomUUID();
-        Quest updateData = new Quest(null, "Updated", 20.0);
+        UpdateQuestRequest updateData = new UpdateQuestRequest();
+        updateData.setDescription("Updated");
+        updateData.setPoints(20.0);
+
         Quest updatedQuest = new Quest(id, "Updated", 20.0);
-        when(questService.updateQuest(eq(id), any(Quest.class))).thenReturn(updatedQuest);
+
+        when(questService.updateQuest(eq(id), any(UpdateQuestRequest.class))).thenReturn(updatedQuest);
 
         ResponseEntity<Quest> response = questController.updateQuest(id, updateData);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(updatedQuest, response.getBody());
     }
-
     @Test
     void deleteQuest_ShouldReturn204() {
         UUID id = UUID.randomUUID();

@@ -1,5 +1,7 @@
 package integra.momentifly.service;
 
+import integra.momentifly.dto.CreateQuestRequest;
+import integra.momentifly.dto.UpdateQuestRequest;
 import integra.momentifly.model.Quest;
 import integra.momentifly.repository.QuestRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,9 +14,14 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class QuestService {
+
     private final QuestRepository questRepository;
 
-    public Quest createQuest(Quest quest) {
+    public Quest createQuest(CreateQuestRequest request) {
+
+        Quest quest = new Quest();
+        quest.setDescription(request.getDescription());
+        quest.setPoints(request.getPoints());
         return questRepository.save(quest);
     }
 
@@ -26,7 +33,11 @@ public class QuestService {
         return questRepository.findById(id);
     }
 
-    public Quest updateQuest(UUID id, Quest updatedQuest) {
+    public Quest updateQuest(UUID id, UpdateQuestRequest request) {
+
+        Quest updatedQuest = new Quest();
+        updatedQuest.setDescription(request.getDescription());
+        updatedQuest.setPoints(request.getPoints());
         return questRepository.findById(id).map(quest -> {
             quest.setDescription(updatedQuest.getDescription());
             quest.setPoints(updatedQuest.getPoints());

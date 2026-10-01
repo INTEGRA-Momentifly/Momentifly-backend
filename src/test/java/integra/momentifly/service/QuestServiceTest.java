@@ -1,5 +1,7 @@
 package integra.momentifly.service;
 
+import integra.momentifly.dto.CreateQuestRequest;
+import integra.momentifly.dto.UpdateQuestRequest;
 import integra.momentifly.model.Quest;
 import integra.momentifly.repository.QuestRepository;
 import org.junit.jupiter.api.Test;
@@ -27,20 +29,26 @@ class QuestServiceTest {
 
     @Test
     void createQuest_ShouldReturnSavedQuest() {
-        Quest quest = new Quest(null, "Test Quest", 10.0);
+
+        CreateQuestRequest request = new CreateQuestRequest();
+        request.setDescription("Test Quest");
+        request.setPoints(10.0);
+
         Quest savedQuest = new Quest(UUID.randomUUID(), "Test Quest", 10.0);
 
         when(questRepository.save(any(Quest.class))).thenReturn(savedQuest);
 
-        Quest result = questService.createQuest(quest);
+        Quest result = questService.createQuest(request);
 
         assertNotNull(result.getId());
         assertEquals("Test Quest", result.getDescription());
-        verify(questRepository, times(1)).save(quest);
+
+        verify(questRepository, times(1)).save(any(Quest.class));
     }
 
     @Test
     void getAllQuests_ShouldReturnList() {
+
         Quest quest = new Quest(UUID.randomUUID(), "Test", 10.0);
         when(questRepository.findAll()).thenReturn(List.of(quest));
 
@@ -52,6 +60,7 @@ class QuestServiceTest {
 
     @Test
     void getQuestById_ShouldReturnQuest_WhenExists() {
+
         UUID id = UUID.randomUUID();
         Quest quest = new Quest(id, "Test", 10.0);
 
@@ -65,9 +74,13 @@ class QuestServiceTest {
 
     @Test
     void updateQuest_ShouldUpdateAndReturnQuest_WhenExists() {
+
         UUID id = UUID.randomUUID();
         Quest existingQuest = new Quest(id, "Old", 10.0);
-        Quest updateData = new Quest(null, "New", 20.0);
+
+        UpdateQuestRequest updateData = new UpdateQuestRequest();
+        updateData.setDescription("New");
+        updateData.setPoints(20.0);
 
         when(questRepository.findById(id)).thenReturn(Optional.of(existingQuest));
         when(questRepository.save(any(Quest.class))).thenReturn(existingQuest);
@@ -80,16 +93,20 @@ class QuestServiceTest {
 
     @Test
     void updateQuest_ShouldThrowException_WhenNotFound() {
+
         UUID id = UUID.randomUUID();
-        Quest updateData = new Quest(null, "New", 20.0);
+
+        UpdateQuestRequest updateData = new UpdateQuestRequest();
+        updateData.setDescription("New");
+        updateData.setPoints(20.0);
 
         when(questRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> questService.updateQuest(id, updateData));
     }
-
     @Test
     void deleteQuest_ShouldCallRepositoryDelete() {
+
         UUID id = UUID.randomUUID();
         questService.deleteQuest(id);
         verify(questRepository, times(1)).deleteById(id);
