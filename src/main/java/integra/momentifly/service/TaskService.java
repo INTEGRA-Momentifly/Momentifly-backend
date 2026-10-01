@@ -1,5 +1,7 @@
 package integra.momentifly.service;
 
+import integra.momentifly.exception.InvalidTaskDataException;
+import integra.momentifly.exception.TaskNotFoundException;
 import integra.momentifly.model.Difficulty;
 import integra.momentifly.repository.TaskRepository;
 import integra.momentifly.model.Task;
@@ -25,18 +27,18 @@ public class TaskService {
         return taskRepository.findByUserId(userId);
     }
 
-    public Task getTaskById(UUID taskId) {
+    public Task getTaskById(UUID taskId) throws TaskNotFoundException {
         return taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
     }
 
-    public Task addTask(UUID userId, String description, LocalDate dueDate, Difficulty difficulty) {
+    public Task addTask(UUID userId, String description, LocalDate dueDate, Difficulty difficulty) throws InvalidTaskDataException {
 //        ONCE THERE IS A USER CLASS AND MANY-TO-ONE IS IMPLEMENTED:
 //        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new RuntimeException("User not found"));
+//                .orElseThrow(() -> new UserNotFounException("User not found"));
 
         if (description == null || dueDate == null || difficulty == null)
-            throw new IllegalArgumentException("description, dueDate, and difficulty are all required");
+            throw new InvalidTaskDataException("description, dueDate, and difficulty are all required");
 
         var task = new Task();
         task.setUserId(userId);
@@ -46,15 +48,15 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public void removeTask(UUID taskId) {
+    public void removeTask(UUID taskId) throws TaskNotFoundException {
         if (!taskRepository.existsById(taskId))
-            throw new RuntimeException("Task not found");
+            throw new TaskNotFoundException("Task not found");
         taskRepository.deleteById(taskId);
     }
 
-    public Task updateTask(UUID taskId, String description, LocalDate dueDate,  Difficulty difficulty) {
+    public Task updateTask(UUID taskId, String description, LocalDate dueDate,  Difficulty difficulty) throws TaskNotFoundException {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
 
         if (description == null || dueDate == null || difficulty == null)
             throw new IllegalArgumentException("description, dueDate, and difficulty are all required");
