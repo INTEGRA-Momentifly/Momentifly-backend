@@ -6,7 +6,7 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_DB: momentifly
-      POSTGRES_USER: postgres-user
+      POSTGRES_USER: pg-user
       POSTGRES_PASSWORD: SecurePassword123!
 
     volumes:
