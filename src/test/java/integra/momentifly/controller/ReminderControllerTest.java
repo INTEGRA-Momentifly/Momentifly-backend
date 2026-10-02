@@ -1,7 +1,7 @@
 package integra.momentifly.controller;
 
-import integra.momentifly.dto.ReminderDtoIn;
-import integra.momentifly.dto.ReminderDtoOut;
+import integra.momentifly.dto.ReminderRequest;
+import integra.momentifly.dto.ReminderResponse;
 import integra.momentifly.mapper.ReminderMapper;
 import integra.momentifly.model.RecurrenceEnum;
 import integra.momentifly.model.Reminder;
@@ -54,8 +54,8 @@ class ReminderControllerTest {
         return reminder;
     }
 
-    private ReminderDtoOut createReminderDtoOut() {
-        return new ReminderDtoOut(
+    private ReminderResponse createReminderDtoOut() {
+        return new ReminderResponse(
                 reminderId,
                 userId,
                 "Test reminder",
@@ -68,7 +68,7 @@ class ReminderControllerTest {
     @Test
     void shouldFindAllReminders() throws Exception {
         Reminder reminder = createReminder();
-        ReminderDtoOut dto = createReminderDtoOut();
+        ReminderResponse dto = createReminderDtoOut();
 
         when(reminderService.findAll())
                 .thenReturn(List.of(reminder));
@@ -91,7 +91,7 @@ class ReminderControllerTest {
     @Test
     void shouldFindReminderById() throws Exception {
         Reminder reminder = createReminder();
-        ReminderDtoOut dto = createReminderDtoOut();
+        ReminderResponse dto = createReminderDtoOut();
 
         when(reminderService.findById(reminderId))
                 .thenReturn(Optional.of(reminder));
@@ -114,7 +114,7 @@ class ReminderControllerTest {
     @Test
     void shouldFindRemindersByUserId() throws Exception {
         Reminder reminder = createReminder();
-        ReminderDtoOut dto = createReminderDtoOut();
+        ReminderResponse dto = createReminderDtoOut();
 
         when(reminderService.findByUserId(userId))
                 .thenReturn(List.of(reminder));
@@ -137,9 +137,9 @@ class ReminderControllerTest {
     @Test
     void shouldCreateReminder() throws Exception {
         Reminder reminder = createReminder();
-        ReminderDtoOut output = createReminderDtoOut();
+        ReminderResponse output = createReminderDtoOut();
 
-        when(mapper.fromDto(any(ReminderDtoIn.class)))
+        when(mapper.fromDto(any(ReminderRequest.class)))
                 .thenReturn(reminder);
 
         when(reminderService.save(reminder))
@@ -166,7 +166,7 @@ class ReminderControllerTest {
                 .andExpect(jsonPath("$.done").value(false))
                 .andExpect(jsonPath("$.recurrence").value("WEEKLY"));
 
-        verify(mapper).fromDto(any(ReminderDtoIn.class));
+        verify(mapper).fromDto(any(ReminderRequest.class));
         verify(reminderService).save(reminder);
         verify(mapper).toDto(reminder);
     }
@@ -177,7 +177,7 @@ class ReminderControllerTest {
         Reminder updatedReminder = createReminder();
         updatedReminder.setDescription("Updated reminder");
 
-        ReminderDtoOut output = new ReminderDtoOut(
+        ReminderResponse output = new ReminderResponse(
                 reminderId,
                 userId,
                 "Updated reminder",
@@ -189,7 +189,7 @@ class ReminderControllerTest {
         when(reminderService.findById(reminderId))
                 .thenReturn(Optional.of(existingReminder));
 
-        when(mapper.fromDto(any(ReminderDtoIn.class)))
+        when(mapper.fromDto(any(ReminderRequest.class)))
                 .thenReturn(updatedReminder);
 
         when(reminderService.save(any(Reminder.class)))
@@ -215,7 +215,7 @@ class ReminderControllerTest {
                 .andExpect(jsonPath("$.recurrence").value("WEEKLY"));
 
         verify(reminderService).findById(reminderId);
-        verify(mapper).fromDto(any(ReminderDtoIn.class));
+        verify(mapper).fromDto(any(ReminderRequest.class));
         verify(reminderService).save(any(Reminder.class));
         verify(mapper).toDto(updatedReminder);
     }

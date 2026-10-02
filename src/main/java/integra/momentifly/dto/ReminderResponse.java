@@ -11,7 +11,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReminderDtoOut {
+public class ReminderResponse {
 
     private UUID id;
 
