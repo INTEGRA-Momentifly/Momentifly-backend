@@ -30,9 +30,7 @@ class QuestServiceTest {
     @Test
     void createQuest_ShouldReturnSavedQuest() {
 
-        CreateQuestRequest request = new CreateQuestRequest();
-        request.setDescription("Test Quest");
-        request.setPoints(10.0);
+        CreateQuestRequest request = new CreateQuestRequest("Test Quest", 10.0);
 
         Quest savedQuest = new Quest(UUID.randomUUID(), "Test Quest", 10.0);
 
@@ -78,14 +76,13 @@ class QuestServiceTest {
         UUID id = UUID.randomUUID();
         Quest existingQuest = new Quest(id, "Old", 10.0);
 
-        UpdateQuestRequest updateData = new UpdateQuestRequest();
-        updateData.setDescription("New");
-        updateData.setPoints(20.0);
+
+        UpdateQuestRequest request = new UpdateQuestRequest("New", 20.0);
 
         when(questRepository.findById(id)).thenReturn(Optional.of(existingQuest));
         when(questRepository.save(any(Quest.class))).thenReturn(existingQuest);
 
-        Quest result = questService.updateQuest(id, updateData);
+        Quest result = questService.updateQuest(id, request);
 
         assertEquals("New", result.getDescription());
         assertEquals(20.0, result.getPoints());
@@ -96,13 +93,11 @@ class QuestServiceTest {
 
         UUID id = UUID.randomUUID();
 
-        UpdateQuestRequest updateData = new UpdateQuestRequest();
-        updateData.setDescription("New");
-        updateData.setPoints(20.0);
+        UpdateQuestRequest request = new UpdateQuestRequest("New", 20.0);
 
         when(questRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> questService.updateQuest(id, updateData));
+        assertThrows(RuntimeException.class, () -> questService.updateQuest(id, request));
     }
     @Test
     void deleteQuest_ShouldCallRepositoryDelete() {

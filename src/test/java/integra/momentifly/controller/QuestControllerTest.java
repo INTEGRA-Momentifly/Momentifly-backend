@@ -33,14 +33,12 @@ class QuestControllerTest {
     @Test
     void createQuest_ShouldReturn200AndQuest() {
 
-        CreateQuestRequest createQuestRequest = new CreateQuestRequest();
-        createQuestRequest.setDescription("Task");
-        createQuestRequest.setPoints(15.0);
+        CreateQuestRequest request = new CreateQuestRequest("Task", 15.0);
 
         Quest savedQuest = new Quest(UUID.randomUUID(), "Task", 15.0);
         when(questService.createQuest(any(CreateQuestRequest.class))).thenReturn(savedQuest);
 
-        ResponseEntity<Quest> response = questController.createQuest(createQuestRequest);
+        ResponseEntity<Quest> response = questController.createQuest(request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(savedQuest, response.getBody());
@@ -82,15 +80,13 @@ class QuestControllerTest {
     @Test
     void updateQuest_ShouldReturn200_WhenUpdated() {
         UUID id = UUID.randomUUID();
-        UpdateQuestRequest updateData = new UpdateQuestRequest();
-        updateData.setDescription("Updated");
-        updateData.setPoints(20.0);
+        UpdateQuestRequest request = new UpdateQuestRequest("Updated", 20.0);
 
         Quest updatedQuest = new Quest(id, "Updated", 20.0);
 
         when(questService.updateQuest(eq(id), any(UpdateQuestRequest.class))).thenReturn(updatedQuest);
 
-        ResponseEntity<Quest> response = questController.updateQuest(id, updateData);
+        ResponseEntity<Quest> response = questController.updateQuest(id, request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(updatedQuest, response.getBody());

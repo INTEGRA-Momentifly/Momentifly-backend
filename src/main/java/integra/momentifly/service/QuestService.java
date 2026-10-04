@@ -20,8 +20,8 @@ public class QuestService {
     public Quest createQuest(CreateQuestRequest request) {
 
         Quest quest = new Quest();
-        quest.setDescription(request.getDescription());
-        quest.setPoints(request.getPoints());
+        quest.setDescription(request.description());
+        quest.setPoints(request.points());
         return questRepository.save(quest);
     }
 
@@ -36,8 +36,8 @@ public class QuestService {
     public Quest updateQuest(UUID id, UpdateQuestRequest request) {
 
         Quest updatedQuest = new Quest();
-        updatedQuest.setDescription(request.getDescription());
-        updatedQuest.setPoints(request.getPoints());
+        updatedQuest.setDescription(request.description());
+        updatedQuest.setPoints(request.points());
         return questRepository.findById(id).map(quest -> {
             quest.setDescription(updatedQuest.getDescription());
             quest.setPoints(updatedQuest.getPoints());
