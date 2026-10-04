@@ -1,8 +1,8 @@
 package integra.momentifly.controller;
 
 import integra.momentifly.dto.WriteTaskRequest;
-import integra.momentifly.exception.InvalidTaskDataException;
-import integra.momentifly.exception.TaskNotFoundException;
+import integra.momentifly.exception.InvalidDataException;
+import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.Difficulty;
 import integra.momentifly.model.Task;
 import integra.momentifly.service.TaskService;
@@ -81,10 +81,10 @@ public class TaskControllerTest {
         UUID taskId = UUID.randomUUID();
 
         when(taskService.getTaskById(taskId))
-                .thenThrow(new TaskNotFoundException("Task not found"));
+                .thenThrow(new NotFoundException("Task not found"));
 
         assertThrows(
-                TaskNotFoundException.class,
+                NotFoundException.class,
                 () -> taskController.getTaskById(taskId)
         );
     }
@@ -119,12 +119,12 @@ public class TaskControllerTest {
         );
 
         when(taskService.addTask(any(), any(), any(), any()))
-                .thenThrow(new InvalidTaskDataException(
+                .thenThrow(new InvalidDataException(
                         "description, dueDate, and difficulty are all required"
                 ));
 
         assertThrows(
-                InvalidTaskDataException.class,
+                InvalidDataException.class,
                 () -> taskController.createTask(UUID.randomUUID(), request)
         );
     }
@@ -142,12 +142,12 @@ public class TaskControllerTest {
     void deleteTask_ThrowsNotFoundException_WhenNotFound() {
         UUID taskId = UUID.randomUUID();
 
-        doThrow(new TaskNotFoundException("Task not found"))
+        doThrow(new NotFoundException("Task not found"))
                 .when(taskService)
                 .removeTask(taskId);
 
         assertThrows(
-                TaskNotFoundException.class,
+                NotFoundException.class,
                 () -> taskController.deleteTask(taskId)
         );
     }
@@ -181,12 +181,12 @@ public class TaskControllerTest {
         );
 
         when(taskService.updateTask(any(), any(), any(), any()))
-                .thenThrow(new InvalidTaskDataException(
+                .thenThrow(new InvalidDataException(
                         "description, dueDate, and difficulty are all required"
                 ));
 
         assertThrows(
-                InvalidTaskDataException.class,
+                InvalidDataException.class,
                 () -> taskController.updateTask(UUID.randomUUID(), request)
         );
     }
@@ -200,10 +200,10 @@ public class TaskControllerTest {
         );
 
         when(taskService.updateTask(any(), any(), any(), any()))
-                .thenThrow(new TaskNotFoundException("Task not found"));
+                .thenThrow(new NotFoundException("Task not found"));
 
         assertThrows(
-                TaskNotFoundException.class,
+                NotFoundException.class,
                 () -> taskController.updateTask(UUID.randomUUID(), request)
         );
     }

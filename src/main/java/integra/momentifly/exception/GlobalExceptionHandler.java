@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(TaskNotFoundException.class)
-    public ResponseEntity<?> handleTaskNotFound(TaskNotFoundException e) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<?> handleTaskNotFound(NotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
-    @ExceptionHandler(InvalidTaskDataException.class)
-    public ResponseEntity<?> handleInvalidTaskData(InvalidTaskDataException e) {
+    @ExceptionHandler(InvalidDataException.class)
+    public ResponseEntity<?> handleInvalidTaskData(InvalidDataException e) {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 }
