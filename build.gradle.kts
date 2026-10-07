@@ -42,6 +42,9 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
+
+    testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 }
 
