@@ -14,7 +14,7 @@ Social: Add friends and keep up with them.
 
 # Tech Stack
 
-Java 17+
+Java 25
 
 Spring Boot
 

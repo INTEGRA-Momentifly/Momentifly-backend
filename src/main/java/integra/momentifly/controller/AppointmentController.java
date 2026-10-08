@@ -1,5 +1,6 @@
 package integra.momentifly.controller;
 
+import integra.momentifly.dto.AppointmentRequest;
 import integra.momentifly.model.Appointment;
 import integra.momentifly.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,14 @@ public class AppointmentController {
 
     // Create an Appointment
     @PostMapping
-    public ResponseEntity<Appointment> createAppointment(@RequestBody Appointment appointment) {
+    public ResponseEntity<Appointment> createAppointment(@RequestBody AppointmentRequest request) {
+        // Mapăm datele din DTO (cerere) în Entitate
+        Appointment appointment = new Appointment();
+        appointment.setUserId(request.getUserId());
+        appointment.setDescription(request.getDescription());
+        appointment.setStartDate(request.getStartDate());
+        appointment.setEndDate(request.getEndDate());
+
         return ResponseEntity.ok(service.createAppointment(appointment));
     }
 
@@ -42,8 +50,15 @@ public class AppointmentController {
 
     // Update an Appointment
     @PutMapping("/{id}")
-    public ResponseEntity<Appointment> updateAppointment(@PathVariable UUID id, @RequestBody Appointment appointmentDetails) {
+    public ResponseEntity<Appointment> updateAppointment(@PathVariable UUID id, @RequestBody AppointmentRequest request) {
         try {
+            // Mapăm datele din DTO în Entitate pentru update
+            Appointment appointmentDetails = new Appointment();
+            appointmentDetails.setUserId(request.getUserId());
+            appointmentDetails.setDescription(request.getDescription());
+            appointmentDetails.setStartDate(request.getStartDate());
+            appointmentDetails.setEndDate(request.getEndDate());
+
             return ResponseEntity.ok(service.updateAppointment(id, appointmentDetails));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
