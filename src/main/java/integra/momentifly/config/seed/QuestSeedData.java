@@ -1,12 +1,7 @@
 package integra.momentifly.config.seed;
 
-import integra.momentifly.model.Difficulty;
 import integra.momentifly.model.Quest;
-import integra.momentifly.model.Task;
-
-import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 public class QuestSeedData {
     public static List<Quest> buildTaskList() {
