@@ -7,6 +7,7 @@ import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.User;
 import integra.momentifly.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-//    private final PasswordEncoder passwordEncoder; ill do this after security config issue
+    private final PasswordEncoder passwordEncoder;
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
