@@ -4,7 +4,7 @@ import integra.momentifly.model.Quest;
 import java.util.List;
 
 public class QuestSeedData {
-    public static List<Quest> buildTaskList() {
+    public static List<Quest> buildQuestList() {
         return List.of(
                 newQuest("Drink a full glass of water within 30 minutes of waking up.", 10),
                 newQuest("Walk at least 8,000 steps today.", 20),

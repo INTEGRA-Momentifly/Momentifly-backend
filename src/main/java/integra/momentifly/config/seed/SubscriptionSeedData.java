@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class SubscriptionSeedData {
-    public static List<Subscription> buildTaskList() {
+    public static List<Subscription> buildSubscriptionList() {
         User user = new User();
         user.setId(UUID.randomUUID());
         user.setPassword("password");

@@ -10,6 +10,7 @@ import java.util.UUID;
 public class TaskSeedData {
 
     public static List<Task> buildTaskList() {
+        // NEED AN ACTUAL USER AFTER FK IS IMPLEMENTED ON THE TASK MODEL
         UUID user1 = UUID.fromString("a1b2c3d4-0000-0000-0000-000000000001");
         UUID user2 = UUID.fromString("a1b2c3d4-0000-0000-0000-000000000002");
 
