@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-// TODO do i need some of these exceptions???
 @Service
 @RequiredArgsConstructor
 public class TaskService {

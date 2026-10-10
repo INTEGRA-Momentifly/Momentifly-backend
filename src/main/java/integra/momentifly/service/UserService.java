@@ -17,9 +17,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-
-// TODO should i throw more exceptions here (ex: user inputs -1 or 0 calories for daily goal)
-//  considering that the input might be validated in the frontend first?
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
@@ -57,6 +54,12 @@ public class UserService implements UserDetailsService {
     public User createUser(CreateUserRequest userRequest) {
         if (userRequest.username() == null || userRequest.username().isBlank())
             throw new InvalidDataException("Username is required");
+
+        if (userRepository.existsByUsername(userRequest.username()))
+            throw new InvalidDataException("Username already taken");
+
+        if (userRequest.password() == null || userRequest.password().isBlank())
+            throw new InvalidDataException("Password is required");
 
         if (userRequest.email() == null || userRequest.email().isBlank())
             throw new InvalidDataException("Email is required");

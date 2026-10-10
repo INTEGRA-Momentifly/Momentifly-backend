@@ -1,6 +1,7 @@
 package integra.momentifly.controller;
 
 
+import integra.momentifly.dto.UpdateTaskRequest;
 import integra.momentifly.dto.WriteTaskRequest;
 import integra.momentifly.model.Task;
 import integra.momentifly.service.TaskService;
@@ -30,7 +31,7 @@ public class TaskController {
 
     @PostMapping("/{userId}")
     public ResponseEntity<?> createTask(@PathVariable UUID userId, @RequestBody WriteTaskRequest request) {
-        Task task = taskService.addTask(userId, request.description(), request.dueDate(), request.difficulty());
+        Task task = taskService.addTask(userId, request);
         return ResponseEntity.ok(task);
     }
 
@@ -41,7 +42,7 @@ public class TaskController {
     }
 
     @PutMapping("/{taskId}")
-    public ResponseEntity<?> updateTask(@PathVariable UUID taskId, @RequestBody WriteTaskRequest request) {
-        return ResponseEntity.ok(taskService.updateTask(taskId, request.description(), request.dueDate(), request.difficulty()));
+    public ResponseEntity<?> updateTask(@PathVariable UUID taskId, @RequestBody UpdateTaskRequest request) {
+        return ResponseEntity.ok(taskService.updateTask(request));
     }
 }
