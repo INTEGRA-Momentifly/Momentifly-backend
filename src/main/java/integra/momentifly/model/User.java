@@ -8,7 +8,7 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
-@Table(name="user")
+@Table(name = "\"user\"") // "user" tells postgres that it's a table name not a keyword
 @Getter
 @Setter
 public class User {
