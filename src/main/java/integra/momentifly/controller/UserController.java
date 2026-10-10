@@ -5,19 +5,21 @@ import integra.momentifly.dto.UpdateUserRequest;
 import integra.momentifly.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
-
-// TODO handle login (use service to find password, repo to find username and
-//  check whether that username exists in the first place
-//  -> the custom methods inside the jpa repo are still unused)
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+
+    @GetMapping("/me")
+    public ResponseEntity<?> me(Authentication authentication) {
+        return ResponseEntity.ok(userService.loadUserByUsername(authentication.getName()));
+    }
 
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody CreateUserRequest createUserRequest) {

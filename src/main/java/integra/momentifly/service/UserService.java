@@ -7,21 +7,22 @@ import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.User;
 import integra.momentifly.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NullMarked;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
-// TODO change some things here after the security config issue
-
-// TODO update password separately?
 
 // TODO should i throw more exceptions here (ex: user inputs -1 or 0 calories for daily goal)
 //  considering that the input might be validated in the frontend first?
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -67,8 +68,7 @@ public class UserService {
         user.setUsername(userRequest.username());
         user.setEmail(userRequest.email());
         user.setDailyCalorieGoal(userRequest.dailyCalorieGoal());
-//        user.setPassword(passwordEncoder.encode(password)); after security config issue
-        user.setPassword(userRequest.password());
+        user.setPassword(passwordEncoder.encode(userRequest.password())); // encode the password using bcrypt, and store it in the db after
         user.setScore(0);
         return userRepository.save(user);
     }
@@ -76,5 +76,18 @@ public class UserService {
     public void deleteUser(UUID id) {
         if (!userRepository.existsById(id)) throw new NotFoundException("User not found");
         userRepository.deleteById(id);
+    }
+
+    @NullMarked
+    @Override
+    public UserDetails loadUserByUsername(String username) throws NotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        return org.springframework.security.core.userdetails.User
+                .withUsername(user.getUsername())
+                .password(user.getPassword())
+                .roles("USER")
+                .build();
     }
 }
