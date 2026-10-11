@@ -10,10 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import integra.momentifly.exception.NotFoundException;
 
 import java.util.Optional;
 
@@ -37,7 +36,6 @@ class UserServiceTest {
         userService = new UserService(userRepository, passwordEncoder);
     }
 
-    // adjust the argument order to match your CreateUserRequest record
     private CreateUserRequest validRequest() {
         return new CreateUserRequest("paul", "paul@gmail.com", "paul123", 2000.0);
     }
@@ -74,22 +72,22 @@ class UserServiceTest {
     }
 
     @Test
-    void loadUserByUsername_returnsTheStoredHash() {
+    void getUserByUsername_returnsTheUser() {
         User user = new User();
         user.setUsername("paul");
         user.setPassword("$2a$10$storedhash");
         when(userRepository.findByUsername("paul")).thenReturn(Optional.of(user));
 
-        UserDetails details = userService.loadUserByUsername("paul");
+        User result = userService.getUserByUsername("paul");
 
-        assertEquals("paul", details.getUsername());
-        assertEquals("$2a$10$storedhash", details.getPassword());   // hash passed through, not re-encoded
+        assertEquals("paul", result.getUsername());
+        assertEquals(user, result);
     }
 
     @Test
-    void loadUserByUsername_withUnknownUser_throwsUsernameNotFound() {
+    void getUserByUsername_withUnknownUser_throwsNotFound() {
         when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
-        assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername("ghost"));
+        assertThrows(NotFoundException.class, () -> userService.getUserByUsername("ghost"));
     }
 }

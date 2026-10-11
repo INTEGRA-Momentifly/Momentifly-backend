@@ -18,7 +18,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication authentication) {
-        return ResponseEntity.ok(userService.loadUserByUsername(authentication.getName()));
+        return ResponseEntity.ok(userService.getUserByUsername(authentication.getName()));
     }
 
     @PostMapping
