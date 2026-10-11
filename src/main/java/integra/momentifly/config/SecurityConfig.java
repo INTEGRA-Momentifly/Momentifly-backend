@@ -3,6 +3,7 @@ package integra.momentifly.config;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -43,9 +44,12 @@ public class SecurityConfig {
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
         return (request, response, authException) -> {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);   // 401
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("text/plain");
-            response.getWriter().write("Invalid username or password");
+            boolean sentCredentials = request.getHeader(HttpHeaders.AUTHORIZATION) != null;
+            response.getWriter().write(sentCredentials
+                    ? "Invalid username or password"
+                    : "Authentication required");
         };
     }
 }
