@@ -1,5 +1,6 @@
 package integra.momentifly.controller;
 
+import integra.momentifly.dto.UpdateTaskRequest;
 import integra.momentifly.dto.WriteTaskRequest;
 import integra.momentifly.exception.InvalidDataException;
 import integra.momentifly.exception.NotFoundException;
@@ -100,7 +101,7 @@ public class TaskControllerTest {
         Task createdTask = new Task();
         createdTask.setDescription("Created task");
 
-        when(taskService.addTask(any(), any(), any(), any()))
+        when(taskService.addTask(any(), any()))
                 .thenReturn(createdTask);
 
         ResponseEntity<?> response =
@@ -118,7 +119,7 @@ public class TaskControllerTest {
                 null
         );
 
-        when(taskService.addTask(any(), any(), any(), any()))
+        when(taskService.addTask(any(), any()))
                 .thenThrow(new InvalidDataException(
                         "description, dueDate, and difficulty are all required"
                 ));
@@ -154,7 +155,8 @@ public class TaskControllerTest {
 
     @Test
     void updateTask_Returns200_WhenOk() {
-        WriteTaskRequest request = new WriteTaskRequest(
+        UpdateTaskRequest request = new UpdateTaskRequest(
+                UUID.randomUUID(),
                 "New task",
                 LocalDate.of(2026, 10, 1),
                 Difficulty.MEDIUM
@@ -162,7 +164,7 @@ public class TaskControllerTest {
 
         Task updatedTask = new Task();
 
-        when(taskService.updateTask(any(), any(), any(), any()))
+        when(taskService.updateTask(any()))
                 .thenReturn(updatedTask);
 
         ResponseEntity<?> response =
@@ -174,13 +176,14 @@ public class TaskControllerTest {
 
     @Test
     void updateTask_ThrowsInvalidTaskDataException_WhenInvalid() {
-        WriteTaskRequest request = new WriteTaskRequest(
+        UpdateTaskRequest request = new UpdateTaskRequest(
+                null,
                 null,
                 null,
                 null
         );
 
-        when(taskService.updateTask(any(), any(), any(), any()))
+        when(taskService.updateTask(any()))
                 .thenThrow(new InvalidDataException(
                         "description, dueDate, and difficulty are all required"
                 ));
@@ -193,13 +196,14 @@ public class TaskControllerTest {
 
     @Test
     void updateTask_ThrowsNotFoundException_WhenNotFound() {
-        WriteTaskRequest request = new WriteTaskRequest(
+        UpdateTaskRequest request = new UpdateTaskRequest(
+                UUID.randomUUID(),
                 "New task",
                 LocalDate.of(2026, 10, 1),
                 Difficulty.MEDIUM
         );
 
-        when(taskService.updateTask(any(), any(), any(), any()))
+        when(taskService.updateTask(any()))
                 .thenThrow(new NotFoundException("Task not found"));
 
         assertThrows(
