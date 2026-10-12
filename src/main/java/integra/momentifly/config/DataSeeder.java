@@ -4,7 +4,6 @@ import integra.momentifly.model.*;
 import integra.momentifly.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
-    private final UserRepository userRepository;
+    private final UserRepository userRepository; // DOES NOT WORK
     private final TaskRepository taskRepository;
     private final QuestRepository questRepository;
     private final ReminderRepository reminderRepository;
