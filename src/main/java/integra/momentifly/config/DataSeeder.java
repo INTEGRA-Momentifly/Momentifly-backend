@@ -24,7 +24,6 @@ public class DataSeeder implements CommandLineRunner {
     private final QuestRepository questRepository;
     private final ReminderRepository reminderRepository;
     private final SubscriptionRepository subscriptionRepository;
-//    private final PasswordEncoder passwordEncoder; does not work yet
 
     @Override
     public void run(String... args) {
@@ -43,24 +42,24 @@ public class DataSeeder implements CommandLineRunner {
 
     private void seedUsers() {
         if (userRepository.count() > 0) return;
-        userRepository.saveAll(List.of(
-                newUser("Paul", "paul@gmail.com", "paul123", 120),
-                newUser("Andrei", "andrei@gmail.com", "andrei123", 200),
-                newUser("Andreea", "andreea@gmail.com", "andreea123", 300),
-                newUser("David", "david@gmail.com", "david123", 185),
-                newUser("Sergiu", "sergiu@gmail.com", "sergiu123", 500),
-                newUser("Gabriel", "gabriel@gmail.com", "gabriel123", 98)
+        userRepository.saveAll(List.of( // seeding hashed passwords by default
+                                        // password is "test123" for every user
+                newUser("Paul", "paul@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 120, 2000.0),
+                newUser("Andrei", "andrei@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 200, 2000.0),
+                newUser("Andreea", "andreea@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 300, 2000.0),
+                newUser("David", "david@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 185, 2000.0),
+                newUser("Sergiu", "sergiu@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 500,2000.0),
+                newUser("Gabriel", "gabriel@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 98, 2000.0)
         ));
     }
 
-    private User newUser(String username, String email, String rawPassword, int score) {
+    private User newUser(String username, String email, String password, int score, Double dailyCalorieGoal) {
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
-//        user.setPassword(passwordEncoder.encode(rawPassword));  does not work yet
-        user.setPassword(rawPassword);
+        user.setPassword(password);
         user.setScore(score);
-        user.setDailyCalorieGoal(2285.0);
+        user.setDailyCalorieGoal(dailyCalorieGoal);
         return user;
     }
 
