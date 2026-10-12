@@ -64,14 +64,6 @@ class UserServiceTest {
     }
 
     @Test
-    void createUser_withBlankPassword_isRejected() {
-        CreateUserRequest request = new CreateUserRequest("paul", "paul@gmail.com", "  ", 2000.0);
-
-        assertThrows(InvalidDataException.class, () -> userService.createUser(request));
-        verify(userRepository, never()).save(any());
-    }
-
-    @Test
     void getUserByUsername_returnsTheUser() {
         User user = new User();
         user.setUsername("paul");

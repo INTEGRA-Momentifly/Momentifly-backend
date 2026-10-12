@@ -7,10 +7,6 @@ import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.User;
 import integra.momentifly.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NullMarked;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -36,15 +32,6 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        if (userRequest.username() == null || userRequest.username().isBlank())
-            throw new InvalidDataException("Username is required");
-
-        if (userRequest.email() == null || userRequest.email().isBlank())
-            throw new InvalidDataException("Email is required");
-
-        if (userRequest.dailyCalorieGoal() == null || userRequest.dailyCalorieGoal() <= 0)
-            throw new InvalidDataException("Daily Calorie Goal cannot be zero or less than 0");
-
         user.setUsername(userRequest.username());
         user.setEmail(userRequest.email());
         user.setDailyCalorieGoal(userRequest.dailyCalorieGoal());
@@ -52,20 +39,8 @@ public class UserService {
     }
 
     public User createUser(CreateUserRequest userRequest) {
-        if (userRequest.username() == null || userRequest.username().isBlank())
-            throw new InvalidDataException("Username is required");
-
         if (userRepository.existsByUsername(userRequest.username()))
             throw new InvalidDataException("Username already taken");
-
-        if (userRequest.password() == null || userRequest.password().isBlank())
-            throw new InvalidDataException("Password is required");
-
-        if (userRequest.email() == null || userRequest.email().isBlank())
-            throw new InvalidDataException("Email is required");
-
-        if (userRequest.dailyCalorieGoal() == null || userRequest.dailyCalorieGoal() <= 0)
-            throw new InvalidDataException("Daily Calorie Goal cannot be zero or less than 0");
 
         var user = new User();
         user.setUsername(userRequest.username());

@@ -12,14 +12,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -71,7 +68,7 @@ class UserControllerTest {
     @Test
     void updateUser_returns200AndTheUpdatedUser() {
         UUID id = UUID.randomUUID();
-        UpdateUserRequest request = mock(UpdateUserRequest.class);
+        UpdateUserRequest request = new UpdateUserRequest("test", "test@gmail.com", 2200.0);
         User updated = new User();
         when(userService.updateUser(id, request)).thenReturn(updated);
 
