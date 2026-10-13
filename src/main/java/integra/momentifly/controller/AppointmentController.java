@@ -3,7 +3,7 @@ package integra.momentifly.controller;
 import integra.momentifly.dto.AppointmentRequest;
 import integra.momentifly.model.Appointment;
 import integra.momentifly.service.AppointmentService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,14 +12,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/appointments")
+@RequiredArgsConstructor
 public class AppointmentController {
 
     private final AppointmentService service;
-
-    @Autowired
-    public AppointmentController(AppointmentService service) {
-        this.service = service;
-    }
 
     // Create an Appointment
     @PostMapping
@@ -30,7 +26,6 @@ public class AppointmentController {
         appointment.setDescription(request.getDescription());
         appointment.setStartDate(request.getStartDate());
         appointment.setEndDate(request.getEndDate());
-
         return ResponseEntity.ok(service.createAppointment(appointment));
     }
 
@@ -58,7 +53,6 @@ public class AppointmentController {
             appointmentDetails.setDescription(request.getDescription());
             appointmentDetails.setStartDate(request.getStartDate());
             appointmentDetails.setEndDate(request.getEndDate());
-
             return ResponseEntity.ok(service.updateAppointment(id, appointmentDetails));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
