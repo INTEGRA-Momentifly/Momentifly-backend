@@ -43,3 +43,13 @@ spring.datasource.password=your_password
 Use Gradle to build and run the project:  
 ./gradlew bootRun  
 The API will be available at http://localhost:8080.
+# Momentifly-backend
+## API Documentation
+
+When running the application locally, the API documentation is available at:
+
+http://localhost:8080/swagger-ui
+
+The raw OpenAPI specification is available at:
+
+http://localhost:8080/v3/api-docs
