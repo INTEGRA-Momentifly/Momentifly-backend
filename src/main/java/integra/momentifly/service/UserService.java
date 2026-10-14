@@ -1,5 +1,6 @@
 package integra.momentifly.service;
 
+import integra.momentifly.dto.ChangePasswordRequest;
 import integra.momentifly.dto.CreateUserRequest;
 import integra.momentifly.dto.UpdateUserRequest;
 import integra.momentifly.exception.InvalidDataException;
@@ -18,15 +19,6 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
-    public User getUserById(UUID id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-    }
 
     public User updateUser(UUID id, UpdateUserRequest userRequest) {
         User user = userRepository.findById(id)
@@ -49,6 +41,17 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(userRequest.password())); // encode the password using bcrypt, and store it in the db after
         user.setScore(0);
         return userRepository.save(user);
+    }
+
+    public void changePassword(String username, ChangePasswordRequest changePasswordRequest) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(changePasswordRequest.currentPassword(), user.getPassword()))
+            throw new InvalidDataException("Passwords don't match");
+
+        user.setPassword(passwordEncoder.encode(changePasswordRequest.newPassword()));
+        userRepository.save(user);
     }
 
     public void deleteUser(UUID id) {

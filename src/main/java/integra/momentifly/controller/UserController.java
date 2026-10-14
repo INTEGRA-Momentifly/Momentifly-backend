@@ -1,5 +1,6 @@
 package integra.momentifly.controller;
 
+import integra.momentifly.dto.ChangePasswordRequest;
 import integra.momentifly.dto.CreateUserRequest;
 import integra.momentifly.dto.UpdateUserRequest;
 import integra.momentifly.service.UserService;
@@ -27,15 +28,19 @@ public class UserController {
         return ResponseEntity.ok(userService.createUser(createUserRequest));
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllUsers(@RequestParam(required = false) UUID userId) {
-        if (userId == null) return ResponseEntity.ok(userService.getAllUsers());
-        return ResponseEntity.ok(userService.getUserById(userId));
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
         return ResponseEntity.ok(userService.updateUser(id, updateUserRequest));
+    }
+
+    // NOTE
+    // The change-password screen should call
+    // auth.setCredentials(username, newPassword) on success,
+    // or log the user out and ask them to sign in again.
+    @PutMapping("/me/password")
+    public ResponseEntity<?> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(authentication.getName(), request);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

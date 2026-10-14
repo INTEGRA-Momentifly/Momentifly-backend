@@ -1,7 +1,9 @@
 package integra.momentifly.controller;
 
+import integra.momentifly.dto.ChangePasswordRequest;
 import integra.momentifly.dto.CreateUserRequest;
 import integra.momentifly.dto.UpdateUserRequest;
+import integra.momentifly.exception.InvalidDataException;
 import integra.momentifly.model.User;
 import integra.momentifly.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -17,8 +19,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
@@ -28,6 +30,27 @@ class UserControllerTest {
 
     @InjectMocks
     private UserController userController;
+
+    @Test
+    void changePassword_returns204_forTheAuthenticatedUser() {
+        ChangePasswordRequest request = new ChangePasswordRequest("oldpass123", "newpass456");
+
+        ResponseEntity<?> response = userController.changePassword(
+                new UsernamePasswordAuthenticationToken("paul", null), request);
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        verify(userService).changePassword("paul", request);   // uses the logged-in username, nothing from the request
+    }
+
+    @Test
+    void changePassword_propagatesInvalidData_whenServiceRejects() {
+        ChangePasswordRequest request = new ChangePasswordRequest("wrongpass", "newpass456");
+        doThrow(new InvalidDataException("Current password is incorrect"))
+                .when(userService).changePassword("paul", request);
+
+        assertThrows(InvalidDataException.class, () -> userController.changePassword(
+                new UsernamePasswordAuthenticationToken("paul", null), request));
+    }
 
     @Test
     void createUser_returns200AndTheCreatedUser() {
@@ -40,29 +63,6 @@ class UserControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(created, response.getBody());
-    }
-
-    @Test
-    void getAllUsers_withoutId_returnsTheList() {
-        List<User> users = List.of(new User(), new User());
-        when(userService.getAllUsers()).thenReturn(users);
-
-        ResponseEntity<?> response = userController.getAllUsers(null);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(users, response.getBody());
-    }
-
-    @Test
-    void getAllUsers_withId_returnsThatUser() {
-        UUID id = UUID.randomUUID();
-        User user = new User();
-        when(userService.getUserById(id)).thenReturn(user);
-
-        ResponseEntity<?> response = userController.getAllUsers(id);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(user, response.getBody());
     }
 
     @Test

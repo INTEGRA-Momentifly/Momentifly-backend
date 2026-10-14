@@ -1,5 +1,6 @@
 package integra.momentifly.service;
 
+import integra.momentifly.dto.ChangePasswordRequest;
 import integra.momentifly.dto.CreateUserRequest;
 import integra.momentifly.exception.InvalidDataException;
 import integra.momentifly.model.User;
@@ -38,6 +39,49 @@ class UserServiceTest {
 
     private CreateUserRequest validRequest() {
         return new CreateUserRequest("paul", "paul@gmail.com", "paul123", 2000.0);
+    }
+
+    private User userWithPassword(String rawPassword) {
+        User user = new User();
+        user.setUsername("paul");
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        return user;
+    }
+
+    @Test
+    void changePassword_withCorrectCurrentPassword_savesTheNewHash() {
+        User user = userWithPassword("oldpass123");
+        when(userRepository.findByUsername("paul")).thenReturn(Optional.of(user));
+
+        userService.changePassword("paul", new ChangePasswordRequest("oldpass123", "newpass456"));
+
+        verify(userRepository).save(user);
+        assertNotEquals("newpass456", user.getPassword());                       // never stored in plain text
+        assertTrue(passwordEncoder.matches("newpass456", user.getPassword()));   // the new password works
+        assertFalse(passwordEncoder.matches("oldpass123", user.getPassword()));  // the old one no longer does
+    }
+
+    @Test
+    void changePassword_withWrongCurrentPassword_isRejected_andNothingChanges() {
+        User user = userWithPassword("oldpass123");
+        String originalHash = user.getPassword();
+        when(userRepository.findByUsername("paul")).thenReturn(Optional.of(user));
+
+        assertThrows(InvalidDataException.class, () ->
+                userService.changePassword("paul", new ChangePasswordRequest("wrongpass", "newpass456")));
+
+        verify(userRepository, never()).save(any());
+        assertEquals(originalHash, user.getPassword());
+    }
+
+    @Test
+    void changePassword_forUnknownUser_throwsNotFound() {
+        when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () ->
+                userService.changePassword("ghost", new ChangePasswordRequest("oldpass123", "newpass456")));
+
+        verify(userRepository, never()).save(any());
     }
 
     @Test

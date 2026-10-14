@@ -26,18 +26,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
-    // TODO i can just delete any account if i'm logged in via postman / likely other tools
-    //  (assuming i know the user id, idk if this is something to fix or not,
-    //  but i can use the GET /api/users and get the id of all users via postman, so..)
-    //  Fix might be to add a role to user??
-
-    // TODO UpdateUserRequest DTO does not contain password right now
-    //   since passwords should never be returned in API responses
-    //    but then how to update password if the user wants to?
-
-    // TODO see more about SecurityConfig and if there's a better way to code this
-
     // filter: Which endpoints are public and which need login
     // What to send back when authentication fails
     @Bean
