@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.UUID;
@@ -67,25 +68,34 @@ class UserControllerTest {
 
     @Test
     void updateUser_returns200AndTheUpdatedUser() {
-        UUID id = UUID.randomUUID();
-        UpdateUserRequest request = new UpdateUserRequest("test", "test@gmail.com", 2200.0);
-        User updated = new User();
-        when(userService.updateUser(id, request)).thenReturn(updated);
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("paul");
 
-        ResponseEntity<?> response = userController.updateUser(id, request);
+        UpdateUserRequest request =
+                new UpdateUserRequest("test", "test@gmail.com", 2200.0);
+
+        User updated = new User();
+
+        when(userService.updateUser("paul", request)).thenReturn(updated);
+
+        ResponseEntity<?> response =
+                userController.updateUser(authentication, request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(updated, response.getBody());
+
+        verify(userService).updateUser("paul", request);
     }
 
     @Test
     void deleteUser_returns204() {
-        UUID id = UUID.randomUUID();
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("paul");
 
-        ResponseEntity<?> response = userController.deleteUser(id);
+        ResponseEntity<?> response = userController.deleteUser(authentication);
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-        verify(userService).deleteUser(id);
+        verify(userService).deleteUser("paul");
     }
 
     @Test

@@ -28,9 +28,9 @@ public class UserController {
         return ResponseEntity.ok(userService.createUser(createUserRequest));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
-        return ResponseEntity.ok(userService.updateUser(id, updateUserRequest));
+    @PutMapping("/me")
+    public ResponseEntity<?> updateUser(Authentication authentication, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
+        return ResponseEntity.ok(userService.updateUser(authentication.getName(), updateUserRequest));
     }
 
     // NOTE
@@ -43,9 +43,9 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable UUID id) {
-        userService.deleteUser(id);
+    @DeleteMapping("/me")
+    public ResponseEntity<?> deleteUser(Authentication authentication) {
+        userService.deleteUser(authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }
