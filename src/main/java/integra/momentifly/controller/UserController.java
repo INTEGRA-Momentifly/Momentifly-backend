@@ -18,8 +18,8 @@ import java.util.UUID;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("/me")
-    public ResponseEntity<?> me(Authentication authentication) {
+    @GetMapping("/current")
+    public ResponseEntity<?> current(Authentication authentication) {
         return ResponseEntity.ok(userService.getUserByUsername(authentication.getName()));
     }
 
@@ -28,7 +28,7 @@ public class UserController {
         return ResponseEntity.ok(userService.createUser(createUserRequest));
     }
 
-    @PutMapping("/me")
+    @PutMapping("/current")
     public ResponseEntity<?> updateUser(Authentication authentication, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
         return ResponseEntity.ok(userService.updateUser(authentication.getName(), updateUserRequest));
     }
@@ -37,13 +37,13 @@ public class UserController {
     // The change-password screen should call
     // auth.setCredentials(username, newPassword) on success,
     // or log the user out and ask them to sign in again.
-    @PutMapping("/me/password")
+    @PutMapping("/current/password")
     public ResponseEntity<?> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
         userService.changePassword(authentication.getName(), request);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/me")
+    @DeleteMapping("/current")
     public ResponseEntity<?> deleteUser(Authentication authentication) {
         userService.deleteUser(authentication.getName());
         return ResponseEntity.noContent().build();

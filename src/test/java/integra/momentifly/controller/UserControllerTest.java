@@ -72,7 +72,7 @@ class UserControllerTest {
         when(authentication.getName()).thenReturn("paul");
 
         UpdateUserRequest request =
-                new UpdateUserRequest("test", "test@gmail.com", 2200.0);
+                new UpdateUserRequest("test@gmail.com", 2200.0);
 
         User updated = new User();
 
@@ -104,7 +104,7 @@ class UserControllerTest {
         user.setUsername("paul");
         when(userService.getUserByUsername("paul")).thenReturn(user);
 
-        ResponseEntity<?> response = userController.me(new UsernamePasswordAuthenticationToken("paul", null));
+        ResponseEntity<?> response = userController.current(new UsernamePasswordAuthenticationToken("paul", null));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(user, response.getBody());

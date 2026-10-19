@@ -25,14 +25,6 @@ public class UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        // user and user request having the same username most likely means
-        // that the user didn't want to change the username, but something else (email or calories)
-        if (!user.getUsername().equals(userRequest.username())
-                && userRepository.existsByUsername(userRequest.username())) {
-            throw new InvalidDataException("Username is already taken");
-        }
-
-        user.setUsername(userRequest.username());
         user.setEmail(userRequest.email());
         user.setDailyCalorieGoal(userRequest.dailyCalorieGoal());
         return userRepository.save(user);

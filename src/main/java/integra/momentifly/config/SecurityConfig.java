@@ -35,10 +35,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-//                       .requestMatchers(HttpMethod.DELETE, "/api/users/*").denyAll() if I would want to block this completely
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll() // registrations should work no matter what
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll() // swagger does not work otherwise
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll() // intentionally public
                         .anyRequest().authenticated()) // everything else needs valid credentials
                 .httpBasic(basic -> basic.authenticationEntryPoint(authenticationEntryPoint()));
 
@@ -63,7 +61,7 @@ public class SecurityConfig {
                 .map(u -> org.springframework.security.core.userdetails.User
                         .withUsername(u.getUsername())
                         .password(u.getPassword())
-                        .roles("USER") // hardcoded, idk
+                        .roles("USER")
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }

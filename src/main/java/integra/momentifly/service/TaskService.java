@@ -31,8 +31,8 @@ public class TaskService {
 
     public Task addTask(UUID userId, WriteTaskRequest writeTaskRequest) throws InvalidDataException {
 //        ONCE THERE IS A USER CLASS AND MANY-TO-ONE IS IMPLEMENTED:
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new UserNotFounException("User not found"));
+//        User user = userRepository.findByUsername  (controller sends the username directly)
+//        and then set .user to the found user
 
         var task = new Task();
         task.setUserId(userId);

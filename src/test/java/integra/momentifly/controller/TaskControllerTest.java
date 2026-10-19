@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -102,8 +104,9 @@ public class TaskControllerTest {
         when(taskService.addTask(any(), any()))
                 .thenReturn(createdTask);
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         ResponseEntity<?> response =
-                taskController.createTask(UUID.randomUUID(), request);
+                taskController.createTask(authentication, request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(createdTask, response.getBody());
