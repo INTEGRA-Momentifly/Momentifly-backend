@@ -8,8 +8,12 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface FriendshipMapper {
-    FriendshipResponse toDto(Friendship friendship);
+  @Mapping(source = "user.id", target = "userId")
+  @Mapping(source = "user.username", target = "userName")
+  @Mapping(source = "friend.id", target = "friendId")
+  @Mapping(source = "friend.username", target = "friendName")
+  FriendshipResponse toDto(Friendship friendship);
 
-    @Mapping(target = "id", ignore = true)
-    Friendship fromDto(FriendshipRequest friendshipRequest);
+  @Mapping(target = "id", ignore = true)
+  Friendship fromDto(FriendshipRequest friendshipRequest);
 }

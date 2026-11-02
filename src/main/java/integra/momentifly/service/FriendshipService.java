@@ -29,6 +29,10 @@ public class FriendshipService {
         );
     }
 
+    public List<Friendship> findByUserId(UUID userId){
+      return friendshipRepository.findByUserIdOrFriendId(userId,userId);
+    }
+
     public Optional<Friendship> findById(UUID id) {
         return friendshipRepository.findById(id);
     }
