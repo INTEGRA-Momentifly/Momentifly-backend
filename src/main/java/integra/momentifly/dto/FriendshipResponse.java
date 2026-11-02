@@ -14,13 +14,11 @@ import java.util.UUID;
 @NoArgsConstructor
 public class FriendshipResponse {
 
-    private UUID id;
-
-    private UUID userId;
-
-    private UUID friendId;
-
-    private LocalDateTime friendshipDate;
-
-    private Status status;
+  private UUID id;
+  private UUID userId;
+  private String userName;
+  private UUID friendId;
+  private String friendName;
+  private LocalDateTime friendshipDate;
+  private Status status;
 }
