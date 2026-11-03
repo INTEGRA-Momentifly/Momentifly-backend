@@ -41,6 +41,10 @@ public class UserService {
             throw new InvalidDataException("Email is already registered");
         }
 
+        if (userRepository.existsByEmail(userRequest.email())) {
+            throw new InvalidDataException("Email is already registered");
+        }
+
         var user = new User();
         user.setUsername(userRequest.username());
         user.setEmail(userRequest.email());
