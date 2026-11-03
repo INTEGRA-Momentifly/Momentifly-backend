@@ -46,9 +46,9 @@ public class AppointmentService {
     repository.deleteById(id);
   }
 
-  public List<Appointment> getAppointmentsBetweenTwoDates(
+  public List<Appointment> getOverlappingAppointments(
       LocalDateTime startDate,
       LocalDateTime endDate) {
-    return repository.findByStartDateBetween(startDate, endDate);
+    return repository.findOverlappingAppointments(startDate, endDate);
   }
 }

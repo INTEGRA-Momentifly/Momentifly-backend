@@ -1,13 +1,12 @@
 package integra.momentifly.controller;
 
 import integra.momentifly.dto.AppointmentRequest;
+import integra.momentifly.exception.InvalidDataException;
 import integra.momentifly.model.Appointment;
 import integra.momentifly.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,17 +38,14 @@ public class AppointmentController {
       @RequestParam(required = false) LocalDateTime endDate
   ) {
     if ((startDate != null && endDate == null) || (startDate == null && endDate != null)) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Atât data de început, cât și data de sfârșit sunt obligatorii pentru filtrare."
-      );
+      throw new InvalidDataException("Atât data de început, cât și data de sfârșit sunt obligatorii pentru filtrare.");
+    }
+    if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+      throw new InvalidDataException("Data de început trebuie să fie anterioară sau egală cu data de sfârșit.");
     }
 
-    if (startDate != null && endDate != null) {
-      return ResponseEntity.ok(service.getAppointmentsBetweenTwoDates(startDate, endDate));
-    }
-
-    return ResponseEntity.ok(service.getAllAppointments());
+    List<Appointment> appointments = service.getOverlappingAppointments(startDate, endDate);
+    return ResponseEntity.ok(appointments);
   }
 
   // Get Appointment by id
