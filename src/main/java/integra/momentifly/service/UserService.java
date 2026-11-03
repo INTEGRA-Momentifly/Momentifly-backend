@@ -34,6 +34,10 @@ public class UserService {
         if (userRepository.existsByUsername(userRequest.username()))
             throw new InvalidDataException("Username already taken");
 
+        if (userRepository.existsByEmail(userRequest.email())) {
+            throw new InvalidDataException("Email is already registered");
+        }
+
         var user = new User();
         user.setUsername(userRequest.username());
         user.setEmail(userRequest.email());
