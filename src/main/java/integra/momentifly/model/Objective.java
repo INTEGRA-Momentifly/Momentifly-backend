@@ -5,25 +5,29 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
-@Table(name="objective")
+@Table(name="objective",
+uniqueConstraints = {
+        @UniqueConstraint(
+                name = "uq_objective_user_type",
+                columnNames = {"user_id", "type"}
+        )
+})
+@Getter
+@Setter
 public class Objective {
 
-  @Getter
-  @Id
-  @GeneratedValue(strategy= GenerationType.UUID)
-  private UUID id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-  // join column, many to one relationship here but only once the user model is finished
-  @Getter @Setter
-  @Column(columnDefinition = "uuid", nullable = false)
-  private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  @Getter @Setter
   private MacroType type;
 
   @Column(nullable=false)
-  @Getter @Setter
   private Integer value;
 }

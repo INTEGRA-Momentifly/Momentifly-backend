@@ -7,10 +7,6 @@ import jakarta.validation.constraints.Positive;
 import java.util.UUID;
 
 public record WriteObjectiveRequest(
-        @NotNull (message = "User id is required.")
-        UUID userId,
-        @NotNull (message = "Invalid macro type.")
-        MacroType macroType,
-        @NotNull @Positive(message="Invalid value. Must be positive.")
-        Integer value
-) { }
+        @NotNull(message = "Type is required") MacroType type,
+        @NotNull(message = "Value is required")
+        @Positive(message = "Value must be greater than 0") Integer value) {}
