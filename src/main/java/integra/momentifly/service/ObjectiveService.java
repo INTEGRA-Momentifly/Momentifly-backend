@@ -5,42 +5,45 @@ import integra.momentifly.dto.WriteObjectiveRequest;
 import integra.momentifly.exception.InvalidDataException;
 import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.Objective;
+import integra.momentifly.model.User;
 import integra.momentifly.repository.ObjectiveRepository;
+import integra.momentifly.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ObjectiveService {
     private final ObjectiveRepository objectiveRepository;
+    private final UserRepository userRepository;
 
-    public ObjectiveResponse getAllObjectivesForUser(UUID userId) {
-        return ObjectiveResponse.from(objectiveRepository.findByUserId(userId));
+    public ObjectiveResponse getObjectives(String username) {
+        return ObjectiveResponse.from(objectiveRepository.findByUser_Username(username));
     }
 
-    public ObjectiveResponse addObjective(WriteObjectiveRequest writeObjectiveRequest) {
-        //        ONCE THERE IS A USER CLASS AND MANY-TO-ONE IS IMPLEMENTED:
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new UserNotFounException("User not found"));
+    public ObjectiveResponse addObjective(String username, WriteObjectiveRequest request) {
+        if (objectiveRepository.existsByUser_UsernameAndType(username, request.type()))
+            throw new InvalidDataException("An objective of type " + request.type() + " already exists");
 
-        if (objectiveRepository.existsByUserIdAndType(writeObjectiveRequest.userId(), writeObjectiveRequest.macroType()))
-            throw new InvalidDataException("An objective of this type already exists for this user.");
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
-        var objective = new Objective();
-        objective.setUserId(writeObjectiveRequest.userId());
-        objective.setType(writeObjectiveRequest.macroType());
-        objective.setValue(writeObjectiveRequest.value());
+        Objective objective = new Objective();
+        objective.setUser(user);
+        objective.setType(request.type());
+        objective.setValue(request.value());
         objectiveRepository.save(objective);
-        return getAllObjectivesForUser(writeObjectiveRequest.userId());
+
+        return getObjectives(username);
     }
 
-    public ObjectiveResponse updateObjective(WriteObjectiveRequest writeObjectiveRequest) throws NotFoundException {
-        Objective objective = objectiveRepository.findByUserIdAndType(writeObjectiveRequest.userId(), writeObjectiveRequest.macroType())
-                .orElseThrow(() -> new NotFoundException("Objective not found"));
+    public ObjectiveResponse updateObjective(String username, WriteObjectiveRequest request) {
+        Objective objective = objectiveRepository.findByUser_UsernameAndType(username, request.type())
+                .orElseThrow(() -> new NotFoundException("No " + request.type() + " objective set yet"));
 
-        objective.setValue(writeObjectiveRequest.value());
+        objective.setValue(request.value());
         objectiveRepository.save(objective);
-        return getAllObjectivesForUser(writeObjectiveRequest.userId());
+
+        return getObjectives(username);
     }
 }

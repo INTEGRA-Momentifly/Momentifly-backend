@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ObjectiveRepository extends JpaRepository<Objective, UUID> {
-    List<Objective> findByUserId(UUID userId);
-    Optional<Objective> findByUserIdAndType(UUID userId, MacroType type);
-    boolean existsByUserIdAndType(UUID userId, MacroType type);
+    List<Objective> findByUser_Username(String username);
+    Optional<Objective> findByUser_UsernameAndType(String username, MacroType type);
+    boolean existsByUser_UsernameAndType(String username, MacroType type);
 }
