@@ -26,8 +26,9 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    @ManyToOne(fetch=FetchType.LAZY, optional = true)
+    @JoinColumn(name="user_id", nullable = true)
+    private User user;
 
     @Column(nullable = false)
     private String description;
