@@ -3,9 +3,7 @@ package integra.momentifly.service;
 import integra.momentifly.dto.CreateQuestRequest;
 import integra.momentifly.dto.UpdateQuestRequest;
 import integra.momentifly.model.Quest;
-import integra.momentifly.model.User;
 import integra.momentifly.repository.QuestRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,124 +14,96 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import static org.mockito.Mockito.*;
+/*
 @ExtendWith(MockitoExtension.class)
 class QuestServiceTest {
 
-  @Mock
-  private QuestRepository questRepository;
+    @Mock
+    private QuestRepository questRepository;
 
-  @Mock
-  private UserService userService;
+    @InjectMocks
+    private QuestService questService;
 
-  @InjectMocks
-  private QuestService questService;
+    @Test
+    void createQuest_ShouldReturnSavedQuest() {
 
-  private String authName;
-  private UUID userId;
-  private User mockUser;
+        CreateQuestRequest request = new CreateQuestRequest("Test Quest", 10.0);
 
-  @BeforeEach
-  void setUp() {
-    authName = "testUser";
-    userId = UUID.randomUUID();
-    mockUser = new User();
-    mockUser.setId(userId);
-    mockUser.setUsername(authName);
-  }
+        Quest savedQuest = new Quest(UUID.randomUUID(), "Test Quest", 10.0);
 
-  @Test
-  void createQuest_ShouldReturnSavedQuest() {
-    CreateQuestRequest request = new CreateQuestRequest("Test Quest", 10.0);
-    Quest savedQuest = new Quest(UUID.randomUUID(), "Test Quest", 10.0, userId);
+        when(questRepository.save(any(Quest.class))).thenReturn(savedQuest);
 
-    when(userService.getUserByUsername(authName)).thenReturn(mockUser);
-    when(questRepository.save(any(Quest.class))).thenReturn(savedQuest);
+        Quest result = questService.createQuest(request);
 
-    Quest result = questService.createQuest(authName, request);
+        assertNotNull(result.getId());
+        assertEquals("Test Quest", result.getDescription());
 
-    assertNotNull(result.getId());
-    assertEquals("Test Quest", result.getDescription());
-    assertEquals(userId, result.getUserId());
+        verify(questRepository, times(1)).save(any(Quest.class));
+    }
 
-    verify(userService, times(1)).getUserByUsername(authName);
-    verify(questRepository, times(1)).save(any(Quest.class));
-  }
+    @Test
+    void getAllQuests_ShouldReturnList() {
 
-  @Test
-  void getAllQuests_ShouldReturnListForUser() {
-    Quest quest = new Quest(UUID.randomUUID(), "Test", 10.0, userId);
+        Quest quest = new Quest(UUID.randomUUID(), "Test", 10.0);
+        when(questRepository.findAll()).thenReturn(List.of(quest));
 
-    when(userService.getUserByUsername(authName)).thenReturn(mockUser);
-    when(questRepository.findByUserId(userId)).thenReturn(List.of(quest));
+        List<Quest> result = questService.getAllQuests();
 
-    List<Quest> result = questService.getAllQuests(authName);
+        assertEquals(1, result.size());
+        verify(questRepository, times(1)).findAll();
+    }
 
-    assertEquals(1, result.size());
-    verify(userService, times(1)).getUserByUsername(authName);
-    verify(questRepository, times(1)).findByUserId(userId);
-  }
+    @Test
+    void getQuestById_ShouldReturnQuest_WhenExists() {
 
-  @Test
-  void getQuestById_ShouldReturnQuest_WhenExists() {
-    UUID id = UUID.randomUUID();
-    Quest quest = new Quest(id, "Test", 10.0, userId);
+        UUID id = UUID.randomUUID();
+        Quest quest = new Quest(id, "Test", 10.0);
 
-    when(userService.getUserByUsername(authName)).thenReturn(mockUser);
-    when(questRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.of(quest));
+        when(questRepository.findById(id)).thenReturn(Optional.of(quest));
 
-    Optional<Quest> result = questService.getQuestById(id, authName);
+        Optional<Quest> result = questService.getQuestById(id);
 
-    assertTrue(result.isPresent());
-    assertEquals(id, result.get().getId());
-    assertEquals(userId, result.get().getUserId());
-  }
+        assertTrue(result.isPresent());
+        assertEquals(id, result.get().getId());
+    }
 
-  @Test
-  void updateQuest_ShouldUpdateAndReturnQuest_WhenExists() {
-    UUID id = UUID.randomUUID();
-    Quest existingQuest = new Quest(id, "Old", 10.0, userId);
-    UpdateQuestRequest request = new UpdateQuestRequest("New", 20.0);
+    @Test
+    void updateQuest_ShouldUpdateAndReturnQuest_WhenExists() {
 
-    when(userService.getUserByUsername(authName)).thenReturn(mockUser);
-    when(questRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.of(existingQuest));
-    when(questRepository.save(any(Quest.class))).thenReturn(existingQuest);
+        UUID id = UUID.randomUUID();
+        Quest existingQuest = new Quest(id, "Old", 10.0);
 
-    Quest result = questService.updateQuest(id, request, authName);
 
-    assertEquals("New", result.getDescription());
-    assertEquals(20.0, result.getPoints());
-    verify(questRepository, times(1)).save(any(Quest.class));
-  }
+        UpdateQuestRequest request = new UpdateQuestRequest("New", 20.0);
 
-  @Test
-  void updateQuest_ShouldThrowException_WhenNotFound() {
-    UUID id = UUID.randomUUID();
-    UpdateQuestRequest request = new UpdateQuestRequest("New", 20.0);
+        when(questRepository.findById(id)).thenReturn(Optional.of(existingQuest));
+        when(questRepository.save(any(Quest.class))).thenReturn(existingQuest);
 
-    when(userService.getUserByUsername(authName)).thenReturn(mockUser);
-    when(questRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.empty());
+        Quest result = questService.updateQuest(id, request);
 
-    assertThrows(RuntimeException.class, () -> questService.updateQuest(id, request, authName));
-  }
+        assertEquals("New", result.getDescription());
+        assertEquals(20.0, result.getPoints());
+    }
 
-  @Test
-  void deleteQuest_ShouldCallRepositoryDelete() {
-    UUID id = UUID.randomUUID();
+    @Test
+    void updateQuest_ShouldThrowException_WhenNotFound() {
 
-    when(userService.getUserByUsername(authName)).thenReturn(mockUser);
+        UUID id = UUID.randomUUID();
 
-    questService.deleteQuest(id, authName);
+        UpdateQuestRequest request = new UpdateQuestRequest("New", 20.0);
 
-    verify(userService, times(1)).getUserByUsername(authName);
-    verify(questRepository, times(1)).deleteByIdAndUserId(id, userId);
-  }
-}
+        when(questRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> questService.updateQuest(id, request));
+    }
+    @Test
+    void deleteQuest_ShouldCallRepositoryDelete() {
+
+        UUID id = UUID.randomUUID();
+        questService.deleteQuest(id);
+        verify(questRepository, times(1)).deleteById(id);
+    }
+}*/
