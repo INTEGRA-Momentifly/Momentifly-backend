@@ -41,7 +41,7 @@ public class DataSeeder implements CommandLineRunner {
         Map<String, User> users = userRepository.findAll().stream()
                 .collect(Collectors.toMap(User::getUsername, Function.identity()));
 
-        seedQuests();
+        //seedQuests();
         seedTasks(users);
         seedReminders(users);
         seedSubscriptions(users);
@@ -55,27 +55,26 @@ public class DataSeeder implements CommandLineRunner {
         }
         userRepository.saveAll(List.of( // seeding hashed passwords by default
                                         // password is "test123" for every user
-                newUser("Paul", "paul@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 120, 2000.0),
-                newUser("Andrei", "andrei@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 200, 2000.0),
-                newUser("Andreea", "andreea@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 300, 2000.0),
-                newUser("David", "david@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 185, 2000.0),
-                newUser("Sergiu", "sergiu@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 500,2000.0),
-                newUser("Gabriel", "gabriel@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 98, 2000.0)
+                newUser("Paul", "paul@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 2000.0),
+                newUser("Andrei", "andrei@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO",  2000.0),
+                newUser("Andreea", "andreea@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 2000.0),
+                newUser("David", "david@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 2000.0),
+                newUser("Sergiu", "sergiu@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 2000.0),
+                newUser("Gabriel", "gabriel@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO",  2000.0)
         ));
     }
 
-    private User newUser(String username, String email, String password, int score, Double dailyCalorieGoal) {
+    private User newUser(String username, String email, String password, Double dailyCalorieGoal) {
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(password);
-        user.setScore(score);
         user.setDailyCalorieGoal(dailyCalorieGoal);
         return user;
     }
 
     // ---------- QUESTS ----------
-
+/*
     private void seedQuests() {
         if (questRepository.count() > 0) {
             return;
@@ -97,7 +96,7 @@ public class DataSeeder implements CommandLineRunner {
         quest.setDescription(description);
         quest.setPoints(points);
         return quest;
-    }
+    }*/
 
     // ---------- TASKS ----------
 
