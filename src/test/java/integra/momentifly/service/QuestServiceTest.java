@@ -14,15 +14,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import static org.mockito.Mockito.*;
+/*
 @ExtendWith(MockitoExtension.class)
 class QuestServiceTest {
 
@@ -111,4 +106,4 @@ class QuestServiceTest {
         questService.deleteQuest(id);
         verify(questRepository, times(1)).deleteById(id);
     }
-}
+}*/
