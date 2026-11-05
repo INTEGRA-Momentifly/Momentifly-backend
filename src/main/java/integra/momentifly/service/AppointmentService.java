@@ -1,8 +1,11 @@
 package integra.momentifly.service;
 
+import integra.momentifly.dto.AppointmentRequest;
+import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.Appointment;
 import integra.momentifly.repository.AppointmentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import integra.momentifly.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,14 +13,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class AppointmentService {
 
     private final AppointmentRepository repository;
-
-    @Autowired
-    public AppointmentService(AppointmentRepository repository) {
-        this.repository = repository;
-    }
 
     public Appointment createAppointment(Appointment appointment) {
         return repository.save(appointment);
@@ -31,14 +30,13 @@ public class AppointmentService {
         return repository.findById(id);
     }
 
-    public Appointment updateAppointment(UUID id, Appointment appointmentDetails) {
+    public Appointment updateAppointment(UUID id, AppointmentRequest request) {
         return repository.findById(id).map(appointment -> {
-            appointment.setUserId(appointmentDetails.getUserId());
-            appointment.setDescription(appointmentDetails.getDescription());
-            appointment.setStartDate(appointmentDetails.getStartDate());
-            appointment.setEndDate(appointmentDetails.getEndDate());
+            appointment.setDescription(request.getDescription());
+            appointment.setStartDate(request.getStartDate());
+            appointment.setEndDate(request.getEndDate());
             return repository.save(appointment);
-        }).orElseThrow(() -> new RuntimeException("Appointment not found with id " + id));
+        }).orElseThrow(() -> new NotFoundException("Appointment not found with id " + id));
     }
 
     public void deleteAppointment(UUID id) {
