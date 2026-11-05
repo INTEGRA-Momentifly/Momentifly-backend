@@ -14,10 +14,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReminderRequest {
-
-    @NotNull
-    private UUID userId;
-
     @NotBlank
     private String description;
 
