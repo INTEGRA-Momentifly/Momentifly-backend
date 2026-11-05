@@ -24,7 +24,5 @@ public class User {
     @JsonIgnore
     private String password;
 
-    private int score;
-
     private Double dailyCalorieGoal;
 }

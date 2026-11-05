@@ -39,7 +39,6 @@ public class UserService {
         user.setEmail(userRequest.email());
         user.setDailyCalorieGoal(userRequest.dailyCalorieGoal());
         user.setPassword(passwordEncoder.encode(userRequest.password())); // encode the password using bcrypt, and store it in the db after
-        user.setScore(0);
         return userRepository.save(user);
     }
 

@@ -17,16 +17,17 @@ public class QuestService {
 
     private final QuestRepository questRepository;
 
-    public Quest createQuest(CreateQuestRequest request) {
+    public Quest createQuest(UUID userId, CreateQuestRequest request) {
 
         Quest quest = new Quest();
         quest.setDescription(request.description());
         quest.setPoints(request.points());
+        quest.setUserId(userId);
         return questRepository.save(quest);
     }
 
-    public List<Quest> getAllQuests() {
-        return questRepository.findAll();
+    public List<Quest> getAllQuests(UUID userId) {
+        return questRepository.findByUserId(userId);
     }
 
     public Optional<Quest> getQuestById(UUID id) {
@@ -35,12 +36,13 @@ public class QuestService {
 
     public Quest updateQuest(UUID id, UpdateQuestRequest request) {
 
-        Quest updatedQuest = new Quest();
+        Quest updatedQuest = questRepository.findById(id).get();
         updatedQuest.setDescription(request.description());
         updatedQuest.setPoints(request.points());
         return questRepository.findById(id).map(quest -> {
             quest.setDescription(updatedQuest.getDescription());
             quest.setPoints(updatedQuest.getPoints());
+            quest.setUserId(updatedQuest.getUserId());
             return questRepository.save(quest);
         }).orElseThrow(() -> new RuntimeException("Quest not found"));
     }
