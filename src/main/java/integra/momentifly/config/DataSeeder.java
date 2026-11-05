@@ -1,17 +1,7 @@
 package integra.momentifly.config;
 
-import integra.momentifly.model.Difficulty;
-import integra.momentifly.model.Quest;
-import integra.momentifly.model.RecurrenceEnum;
-import integra.momentifly.model.Reminder;
-import integra.momentifly.model.Subscription;
-import integra.momentifly.model.Task;
-import integra.momentifly.model.User;
-import integra.momentifly.repository.QuestRepository;
-import integra.momentifly.repository.ReminderRepository;
-import integra.momentifly.repository.SubscriptionRepository;
-import integra.momentifly.repository.TaskRepository;
-import integra.momentifly.repository.UserRepository;
+import integra.momentifly.model.*;
+import integra.momentifly.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -19,32 +9,29 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
-    private final UserRepository userRepository; // DOES NOT WORK
+    private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final QuestRepository questRepository;
     private final ReminderRepository reminderRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final AppointmentRepository appointmentRepository;
 
     @Override
     public void run(String... args) {
         seedUsers();   // must run first, the others reference users
 
-        Map<String, User> users = userRepository.findAll().stream()
-                .collect(Collectors.toMap(User::getUsername, Function.identity()));
+        List<User> users = userRepository.findAll();
 
         seedQuests();
         seedTasks(users);
         seedReminders(users);
         seedSubscriptions(users);
+        seedAppointments(users);
     }
 
     // ---------- USERS ----------
@@ -54,12 +41,9 @@ public class DataSeeder implements CommandLineRunner {
             return;
         }
         userRepository.saveAll(List.of( // seeding hashed passwords by default
-                                        // password is "test123" for every user
+                // password is "test123" for every user
                 newUser("Paul", "paul@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 120, 2000.0),
                 newUser("Andrei", "andrei@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 200, 2000.0),
-                newUser("Andreea", "andreea@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 300, 2000.0),
-                newUser("David", "david@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 185, 2000.0),
-                newUser("Sergiu", "sergiu@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 500,2000.0),
                 newUser("Gabriel", "gabriel@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 98, 2000.0)
         ));
     }
@@ -101,29 +85,26 @@ public class DataSeeder implements CommandLineRunner {
 
     // ---------- TASKS ----------
 
-    private void seedTasks(Map<String, User> users) {
-        if (taskRepository.count() > 0) {
-            return;
+    private void seedTasks(List<User> users) {
+        if (taskRepository.count() > 0) return;
+
+        for (User user : users) {
+            taskRepository.saveAll(List.of(
+                    newTask(user, "Finish Spring Boot assignment", LocalDate.of(2026, 10, 10), Difficulty.HARD),
+                    newTask(user, "Buy groceries", LocalDate.of(2026, 10, 5), Difficulty.EASY),
+                    newTask(user, "Clean the apartment", LocalDate.of(2026, 10, 7), Difficulty.MEDIUM),
+                    newTask(user, "Prepare presentation slides", LocalDate.of(2026, 10, 12), Difficulty.HARD),
+                    newTask(user, "Read chapter 5", LocalDate.of(2026, 10, 6), Difficulty.EASY),
+                    newTask(user, "Reply to emails", LocalDate.of(2026, 10, 4), Difficulty.EASY),
+                    newTask(user, "Fix login bug", LocalDate.of(2026, 10, 8), Difficulty.MEDIUM),
+                    newTask(user, "Write unit tests", LocalDate.of(2026, 10, 9), Difficulty.HARD)
+            ));
         }
-
-        // NEED AN ACTUAL USER AFTER FK IS IMPLEMENTED ON THE REMINDER MODEL
-        UUID user = UUID.fromString("a1b2c3d4-0000-0000-0000-000000000001");
-
-        taskRepository.saveAll(List.of(
-                newTask(user, "Finish Spring Boot assignment", LocalDate.of(2026, 10, 10), Difficulty.HARD),
-                newTask(user, "Buy groceries", LocalDate.of(2026, 10, 5), Difficulty.EASY),
-                newTask(user, "Clean the apartment", LocalDate.of(2026, 10, 7), Difficulty.MEDIUM),
-                newTask(user, "Prepare presentation slides", LocalDate.of(2026, 10, 12), Difficulty.HARD),
-                newTask(user, "Read chapter 5", LocalDate.of(2026, 10, 6), Difficulty.EASY),
-                newTask(user, "Reply to emails", LocalDate.of(2026, 10, 4), Difficulty.EASY),
-                newTask(user, "Fix login bug", LocalDate.of(2026, 10, 8), Difficulty.MEDIUM),
-                newTask(user, "Write unit tests", LocalDate.of(2026, 10, 9), Difficulty.HARD)
-        ));
     }
 
-    private Task newTask(UUID user, String description, LocalDate dueDate, Difficulty difficulty) {
+    private Task newTask(User user, String description, LocalDate dueDate, Difficulty difficulty) {
         Task task = new Task();
-        task.setUserId(user);
+        task.setUser(user);
         task.setDescription(description);
         task.setDueDate(dueDate);
         task.setDifficulty(difficulty);
@@ -132,24 +113,22 @@ public class DataSeeder implements CommandLineRunner {
 
     // ---------- REMINDERS ----------
 
-    private void seedReminders(Map<String, User> users) {
-        if (reminderRepository.count() > 0) {
-            return;
-        }
-        // NEED AN ACTUAL USER AFTER FK IS IMPLEMENTED ON THE REMINDER MODEL
-        UUID user = UUID.fromString("a1b2c3d4-0000-0000-0000-000000000001");
+    private void seedReminders(List<User> users) {
+        if (reminderRepository.count() > 0) return;
 
-        reminderRepository.saveAll(List.of(
-                newReminder(user, "Drink water", LocalDateTime.now().plusHours(2), RecurrenceEnum.NONE),
-                newReminder(user, "Friend birthday", LocalDateTime.now().plusDays(30), RecurrenceEnum.YEARLY),
-                newReminder(user, "Renew gym subscription", LocalDateTime.now().plusDays(10), RecurrenceEnum.MONTHLY),
-                newReminder(user, "Build timetable for next week", LocalDateTime.now().plusDays(3), RecurrenceEnum.WEEKLY)
-        ));
+        for (User user : users) {
+            reminderRepository.saveAll(List.of(
+                    newReminder(user, "Drink water", LocalDateTime.now().plusHours(2), RecurrenceEnum.NONE),
+                    newReminder(user, "Friend birthday", LocalDateTime.now().plusDays(30), RecurrenceEnum.YEARLY),
+                    newReminder(user, "Renew gym subscription", LocalDateTime.now().plusDays(10), RecurrenceEnum.MONTHLY),
+                    newReminder(user, "Build timetable for next week", LocalDateTime.now().plusDays(3), RecurrenceEnum.WEEKLY)
+            ));
+        }
     }
 
-    private Reminder newReminder(UUID user, String description, LocalDateTime date, RecurrenceEnum recurrence) {
+    private Reminder newReminder(User user, String description, LocalDateTime date, RecurrenceEnum recurrence) {
         Reminder reminder = new Reminder();
-        reminder.setUserId(user);
+        reminder.setUser(user);
         reminder.setDescription(description);
         reminder.setReminderDate(date);
         reminder.setDone(false);
@@ -159,18 +138,17 @@ public class DataSeeder implements CommandLineRunner {
 
     // ---------- SUBSCRIPTIONS ----------
 
-    private void seedSubscriptions(Map<String, User> users) {
-        if (subscriptionRepository.count() > 0) {
-            return;
-        }
-        User paul = users.get("Paul");
+    private void seedSubscriptions(List<User> users) {
+        if (subscriptionRepository.count() > 0) return;
 
-        subscriptionRepository.saveAll(List.of(
-                newSubscription(paul, 15.2, "Netflix", LocalDateTime.now().plusMonths(1)),
-                newSubscription(paul, 10.2, "Crunchyroll", LocalDateTime.now().plusMonths(1)),
-                newSubscription(paul, 20.0, "HBO", LocalDateTime.now().plusMonths(1)),
-                newSubscription(paul, 10.0, "YouTube Premium", LocalDateTime.now().plusMonths(1))
-        ));
+        for (User user : users) {
+            subscriptionRepository.saveAll(List.of(
+                    newSubscription(user, 15.2, "Netflix", LocalDateTime.now().plusMonths(1)),
+                    newSubscription(user, 10.2, "Crunchyroll", LocalDateTime.now().plusMonths(1)),
+                    newSubscription(user, 20.0, "HBO", LocalDateTime.now().plusMonths(1)),
+                    newSubscription(user, 10.0, "YouTube Premium", LocalDateTime.now().plusMonths(1))
+            ));
+        }
     }
 
     private Subscription newSubscription(User user, Double cost, String name, LocalDateTime endDate) {
@@ -181,4 +159,33 @@ public class DataSeeder implements CommandLineRunner {
         subscription.setEndDate(endDate);
         return subscription;
     }
+
+    // ---------- APPOINTMENTS ----------
+
+    private void seedAppointments(List<User> users) {
+        if (appointmentRepository.count() > 0) return;
+
+        for (User user : users) {
+            appointmentRepository.saveAll(List.of(
+                    newAppointment(user, "Personal trainer session", inDays(1, 18), inDays(1, 19)),
+                    newAppointment(user, "Doctor check-up", inDays(2, 9), inDays(2, 10)),
+                    newAppointment(user, "Nutritionist consultation", inDays(5, 14), inDays(5, 15)),
+                    newAppointment(user, "Dentist appointment", inDays(9, 11), inDays(9, 12))
+            ));
+        }
+    }
+
+    private Appointment newAppointment(User user, String description, LocalDateTime startDate, LocalDateTime endDate) {
+        Appointment appointment = new Appointment();
+        appointment.setUser(user);
+        appointment.setDescription(description);
+        appointment.setStartDate(startDate);
+        appointment.setEndDate(endDate);
+        return appointment;
+    }
+
+    private LocalDateTime inDays(int days, int hour) {
+        return LocalDate.now().plusDays(days).atTime(hour, 0);
+    }
+
 }
