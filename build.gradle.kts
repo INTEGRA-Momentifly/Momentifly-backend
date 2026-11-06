@@ -40,6 +40,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
+    testImplementation("org.springframework.security:spring-security-test")
+
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("org.flywaydb:flyway-database-postgresql")
