@@ -12,9 +12,6 @@ import java.util.UUID;
 @Getter
 @Setter
 public class CreateSubscriptionRequest {
-//  Lăsat fără @NotNull temporar, sau menținut dacă frontend-ul trimite deja un ID valid
-    private UUID userId;
-
     @NotNull
     private double cost;
 
