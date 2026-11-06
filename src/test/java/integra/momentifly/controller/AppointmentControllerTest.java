@@ -1,17 +1,22 @@
 package integra.momentifly.controller;
 
+import integra.momentifly.config.SecurityConfig;
 import integra.momentifly.dto.AppointmentRequest;
 import integra.momentifly.model.Appointment;
 import integra.momentifly.model.User;
+import integra.momentifly.repository.UserRepository;
 import integra.momentifly.service.AppointmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -23,18 +28,25 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AppointmentController.class)
+@Import(SecurityConfig.class)
 @WithMockUser(username = "Paul")
 public class AppointmentControllerTest {
 
     @Autowired
+    private WebApplicationContext context;
+
     private MockMvc mockMvc;
 
     @MockitoBean
     private AppointmentService appointmentService;
+
+    @MockitoBean
+    private UserRepository userRepository;   // required by SecurityConfig's UserDetailsService bean
 
     private Appointment appointment;
     private UUID appointmentId;
@@ -46,6 +58,13 @@ public class AppointmentControllerTest {
               "endDate": "2026-12-01T11:00:00"
             }
             """;
+
+    @BeforeEach
+    void setUpMockMvc() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
+    }
 
     @BeforeEach
     void setUp() {
