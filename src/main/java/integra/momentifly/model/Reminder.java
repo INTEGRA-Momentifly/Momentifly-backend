@@ -1,5 +1,6 @@
 package integra.momentifly.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,6 +17,7 @@ public class Reminder {
 
     @ManyToOne(fetch=FetchType.LAZY, optional = true)
     @JoinColumn(name="user_id", nullable = true)
+    @JsonIgnore
     private User user;
 
     @Column(name = "description")

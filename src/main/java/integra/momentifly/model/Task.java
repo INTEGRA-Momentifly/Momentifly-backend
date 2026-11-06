@@ -1,4 +1,5 @@
 package integra.momentifly.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +18,7 @@ public class Task {
 
     @ManyToOne(fetch=FetchType.LAZY, optional = true)
     @JoinColumn(name="user_id", nullable = true)
+    @JsonIgnore
     private User user;
 
     @Column(length=255, nullable=false)

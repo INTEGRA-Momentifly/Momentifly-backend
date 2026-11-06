@@ -15,43 +15,32 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskService {
     private final TaskRepository taskRepository;
+    private final UserService userService;
 
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<Task> getAllTasksForUser(String username) {
+        return taskRepository.findByUser_Username(username);
     }
 
-    public List<Task> getAllTasksForUser(UUID userId) {
-        return taskRepository.findByUserId(userId);
-    }
-
-    public Task getTaskById(UUID taskId) throws NotFoundException {
-        return taskRepository.findById(taskId)
+    public Task getTaskById(UUID taskId, String username) throws NotFoundException {
+        return taskRepository.findByIdAndUser_Username(taskId, username)
                 .orElseThrow(() -> new NotFoundException("Task not found"));
     }
 
-    public Task addTask(UUID userId, WriteTaskRequest writeTaskRequest) throws InvalidDataException {
-//        ONCE THERE IS A USER CLASS AND MANY-TO-ONE IS IMPLEMENTED:
-//        User user = userRepository.findByUsername  (controller sends the username directly)
-//        and then set .user to the found user
-
+    public Task addTask(String username, WriteTaskRequest writeTaskRequest) throws InvalidDataException {
         var task = new Task();
-        task.setUserId(userId);
+        task.setUser(userService.getUserByUsername(username));
         task.setDescription(writeTaskRequest.description());
         task.setDueDate(writeTaskRequest.dueDate());
         task.setDifficulty(writeTaskRequest.difficulty());
         return taskRepository.save(task);
     }
 
-    public void removeTask(UUID taskId) throws NotFoundException {
-        if (!taskRepository.existsById(taskId))
-            throw new NotFoundException("Task not found");
-        taskRepository.deleteById(taskId);
+    public void removeTask(UUID taskId, String username) throws NotFoundException {
+        taskRepository.delete(getTaskById(taskId, username));
     }
 
-    public Task updateTask(UUID taskId, WriteTaskRequest writeTaskRequest) throws NotFoundException {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new NotFoundException("Task not found"));
-
+    public Task updateTask(UUID taskId, String username, WriteTaskRequest writeTaskRequest) throws NotFoundException {
+        Task task = getTaskById(taskId, username);
         task.setDescription(writeTaskRequest.description());
         task.setDueDate(writeTaskRequest.dueDate());
         task.setDifficulty(writeTaskRequest.difficulty());
