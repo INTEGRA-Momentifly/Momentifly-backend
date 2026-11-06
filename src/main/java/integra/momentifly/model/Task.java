@@ -1,12 +1,6 @@
 package integra.momentifly.model;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +18,7 @@ public class Task {
 
     @ManyToOne(fetch=FetchType.LAZY, optional = true)
     @JoinColumn(name="user_id", nullable = true)
+    @JsonIgnore
     private User user;
 
     @Column(length=255, nullable=false)

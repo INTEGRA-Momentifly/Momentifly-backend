@@ -17,29 +17,35 @@ import java.util.UUID;
 public class AppointmentService {
 
     private final AppointmentRepository repository;
+    private final UserService userService;
 
-    public Appointment createAppointment(Appointment appointment) {
+    public Appointment createAppointment(String username, AppointmentRequest request) {
+        Appointment appointment = new Appointment();
+        appointment.setUser(userService.getUserByUsername(username));
+        appointment.setDescription(request.getDescription());
+        appointment.setStartDate(request.getStartDate());
+        appointment.setEndDate(request.getEndDate());
         return repository.save(appointment);
     }
 
-    public List<Appointment> getAllAppointments() {
-        return repository.findAll();
+    public List<Appointment> getAppointmentsForUser(String username) {
+        return repository.findByUser_Username(username);
     }
 
-    public Optional<Appointment> getAppointmentById(UUID id) {
-        return repository.findById(id);
+    public Appointment getAppointmentById(UUID id, String username) {
+        return repository.findByIdAndUser_Username(id, username)
+                .orElseThrow(() -> new NotFoundException("Appointment not found"));
     }
 
-    public Appointment updateAppointment(UUID id, AppointmentRequest request) {
-        return repository.findById(id).map(appointment -> {
-            appointment.setDescription(request.getDescription());
-            appointment.setStartDate(request.getStartDate());
-            appointment.setEndDate(request.getEndDate());
-            return repository.save(appointment);
-        }).orElseThrow(() -> new NotFoundException("Appointment not found with id " + id));
+    public Appointment updateAppointment(UUID id, String username, AppointmentRequest request) {
+        Appointment appointment = getAppointmentById(id, username);
+        appointment.setDescription(request.getDescription());
+        appointment.setStartDate(request.getStartDate());
+        appointment.setEndDate(request.getEndDate());
+        return repository.save(appointment);
     }
 
-    public void deleteAppointment(UUID id) {
-        repository.deleteById(id);
+    public void deleteAppointment(UUID id, String username) {
+        repository.delete(getAppointmentById(id, username));
     }
 }

@@ -1,11 +1,7 @@
 package integra.momentifly.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +24,7 @@ public class Appointment {
 
     @ManyToOne(fetch=FetchType.LAZY, optional = true)
     @JoinColumn(name="user_id", nullable = true)
+    @JsonIgnore
     private User user;
 
     @Column(nullable = false)

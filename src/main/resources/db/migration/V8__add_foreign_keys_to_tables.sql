@@ -7,6 +7,9 @@
 -- THIS MEANS THAT EVEN IF SUBSCRIPTIONS ALREADY HAS THE RIGHT FK, I MIGHT NEED TO CORRECT
 -- ITS SERVICE AND CONTROLLER
 
+-- HAVE AUTH SERVICE (USER CONTROLLER) IN THE OTHER SERVICES AND USE IT TO IDENTIFY OBJECT
+-- ID AND IF IT BELONGS TO THE CURRENT USER
+
 alter table appointment
 add constraint fk_appointment_user foreign key (user_id) references "user"(id) on delete cascade;
 
