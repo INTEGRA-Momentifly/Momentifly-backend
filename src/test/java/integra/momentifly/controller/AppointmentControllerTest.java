@@ -110,6 +110,7 @@ public class AppointmentControllerTest {
         .andExpect(jsonPath("$.description").value("Consult stomatologic"));
   }
 
+<<<<<<< HEAD
   @Test
   void testDeleteAppointment() throws Exception {
     doNothing().when(appointmentService).deleteAppointment(appointmentId);
@@ -119,4 +120,9 @@ public class AppointmentControllerTest {
             .with(csrf()))
         .andExpect(status().isNoContent());
   }
+=======
+        mockMvc.perform(delete("/api/appointments/{id}", appointmentId))
+                .andExpect(status().isNoContent());
+    }
+>>>>>>> eb11563 (score backend with tests and scheduled job)
 }

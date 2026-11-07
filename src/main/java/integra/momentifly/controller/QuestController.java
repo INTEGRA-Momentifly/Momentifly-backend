@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -26,57 +27,60 @@ import java.util.UUID;
 public class QuestController {
 
   private final QuestService questService;
-  private final UserService userService;
   private final QuestCompletionService questCompletionService;
   private final QuestCompletionMapper mapper;
 
   @PostMapping("/completeQuest")
-  public QuestCompletionResponse completeQuest(Authentication authentication, @RequestParam UUID questId) {
-    //notfound
-    UUID userId = userService.getUserByUsername(authentication.getName()).getId();
-    Double points = questService.getQuestById(questId).get().getPoints();
-    QuestCompletion questCompletion = new QuestCompletion();
-    questCompletion = questCompletionService.completeQuest(questId, userId, points, QuestEnum.COMPLETE, LocalDateTime.now());
-    return mapper.toDto(questCompletion);
+  public ResponseEntity<QuestCompletionResponse> completeQuest(Authentication authentication, @RequestParam UUID questId) {
+    Optional<Quest> quest = questService.getQuestById(questId, authentication.getName());
+
+    if ( !quest.isPresent()){
+      return  ResponseEntity.notFound().build();
+    }
+
+    Double points = quest.get().getPoints();
+    Optional<QuestCompletion> questCompletion = questCompletionService
+        .completeQuest(questId, authentication.getName(), points, QuestEnum.COMPLETE, LocalDateTime.now());
+
+    return questCompletion
+        .map(completion -> ResponseEntity.ok(mapper.toDto(completion)))
+        .orElseGet(() -> ResponseEntity.badRequest().build());
   }
 
   @GetMapping("/weekScore")
   public Integer weekScore(Authentication authentication, @RequestParam LocalDateTime date){
-    UUID userId = userService.getUserByUsername(authentication.getName()).getId();
-    return questCompletionService.weekScore(date, userId);
+    return questCompletionService.weekScore(date, authentication.getName());
   }
 
   @PostMapping
   public ResponseEntity<Quest> createQuest(Authentication authentication, @RequestBody CreateQuestRequest quest) {
-    UUID userId = userService.getUserByUsername(authentication.getName()).getId();
-    return ResponseEntity.ok(questService.createQuest(userId, quest));
+    return ResponseEntity.ok(questService.createQuest(authentication.getName(), quest));
   }
 
   @GetMapping
   public ResponseEntity<List<Quest>> getAllQuests(Authentication authentication) {
-    UUID userId = userService.getUserByUsername(authentication.getName()).getId();
-    return ResponseEntity.ok(questService.getAllQuests(userId));
+    return ResponseEntity.ok(questService.getAllQuests(authentication.getName()));
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Quest> getQuestById(@PathVariable UUID id) {
-    return questService.getQuestById(id)
+  public ResponseEntity<Quest> getQuestById(Authentication authentication, @PathVariable UUID id) {
+    return questService.getQuestById(id, authentication.getName())
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<Quest> updateQuest(@PathVariable UUID id, @RequestBody UpdateQuestRequest quest) {
+  public ResponseEntity<Quest> updateQuest(Authentication authentication, @PathVariable UUID id, @RequestBody UpdateQuestRequest quest) {
     try {
-      return ResponseEntity.ok(questService.updateQuest(id, quest));
+      return ResponseEntity.ok(questService.updateQuest(id, quest,authentication.getName()));
     } catch (RuntimeException e) {
       return ResponseEntity.notFound().build();
     }
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteQuest(@PathVariable UUID id) {
-    questService.deleteQuest(id);
+  public ResponseEntity<Void> deleteQuest(Authentication authentication,@PathVariable UUID id) {
+    questService.deleteQuest(id, authentication.getName());
     return ResponseEntity.noContent().build();
   }
 }
