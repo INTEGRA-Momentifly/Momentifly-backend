@@ -126,6 +126,7 @@ class AppointmentControllerTest {
     assertEquals(appointment, response.getBody());
   }
 
+<<<<<<< HEAD
   @Test
   void testDeleteAppointment() {
     doNothing().when(appointmentService).deleteAppointment(appointmentId);
@@ -134,4 +135,9 @@ class AppointmentControllerTest {
 
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
   }
+=======
+        mockMvc.perform(delete("/api/appointments/{id}", appointmentId))
+                .andExpect(status().isNoContent());
+    }
+>>>>>>> eb11563 (score backend with tests and scheduled job)
 }
