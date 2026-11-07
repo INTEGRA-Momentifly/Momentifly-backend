@@ -21,6 +21,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    public List<User> findAll(){ return userRepository.findAll();}
+
     public User updateUser(String username, UpdateUserRequest userRequest) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found"));

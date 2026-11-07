@@ -1,12 +1,12 @@
 package integra.momentifly.service;
 
-import integra.momentifly.model.QuestCompletion;
-import integra.momentifly.model.QuestEnum;
-import integra.momentifly.model.Reminder;
+import integra.momentifly.model.*;
 import integra.momentifly.repository.QuestCompletionRepository;
 import integra.momentifly.repository.ReminderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
@@ -18,6 +18,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class QuestCompletionService {
   private final QuestCompletionRepository questCompletionRepository;
+  private final UserService userService;
+  private final QuestService questService;
+
+  public List<QuestCompletion> findByUserIdAndQuestId(UUID userId, UUID questId){
+    return questCompletionRepository.findByUserIdAndQuestId(userId,questId);
+  }
 
   public List<QuestCompletion> findAll() {
     return questCompletionRepository.findAll();
@@ -27,17 +33,25 @@ public class QuestCompletionService {
     return questCompletionRepository.findById(id);
   }
 
-  public QuestCompletion completeQuest(UUID questId, UUID userId, Double points, QuestEnum status, LocalDateTime date){
+  public Optional<QuestCompletion> completeQuest(UUID questId, String authName, Double points, QuestEnum status, LocalDateTime date){
+    UUID userId = userService.getUserByUsername(authName).getId();
+
+    if ( !findByUserIdAndQuestId(userId,questId).isEmpty()){
+      return Optional.empty();
+    }
+
     QuestCompletion questCompletion = new QuestCompletion();
     questCompletion.setQuestId(questId);
     questCompletion.setUserId(userId);
     questCompletion.setCompletionStatus(status);
     questCompletion.setCompletionDate(date);
     questCompletion.setPoints(points);
-    return questCompletionRepository.save(questCompletion);
+    return Optional.of(questCompletionRepository.save(questCompletion));
   }
 
-  public Integer weekScore(LocalDateTime date, UUID userId){
+  public Integer weekScore(LocalDateTime date, String authName){
+    UUID userId = userService.getUserByUsername(authName).getId();
+
     LocalDateTime lastMonday = date
         .toLocalDate()
         .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -57,7 +71,13 @@ public class QuestCompletionService {
         .mapToDouble(QuestCompletion::getPoints)
         .sum();
 
-    return (int) (completed/total);
+    //division by 0
+    if (total == 0.0) {
+      return 0;
+    }
+
+    //presentage
+    return (int) Math.round((completed / total) * 100);
   }
 
   public QuestCompletion save(QuestCompletion questCompletion) {
@@ -66,5 +86,32 @@ public class QuestCompletionService {
 
   public void deleteById(UUID id) {
     questCompletionRepository.deleteById(id);
+  }
+
+  @Scheduled(cron = "0 0 0 * * *")
+  @Transactional
+  public void registerMissedQuestsDaily() {
+    LocalDateTime now = LocalDateTime.now();
+    List<User> users = userService.findAll();
+
+    for (User user : users) {
+      List<Quest> userQuests = questService.findByUserId(user.getId());
+
+      for (Quest quest : userQuests) {
+        //is this quest completed or not
+        boolean alreadyRecorded = !findByUserIdAndQuestId(user.getId(), quest.getId()).isEmpty();
+
+        if (!alreadyRecorded) {
+          QuestCompletion openCompletion = new QuestCompletion();
+          openCompletion.setQuestId(quest.getId());
+          openCompletion.setUserId(user.getId());
+          openCompletion.setCompletionStatus(QuestEnum.OPEN);
+          openCompletion.setCompletionDate(now);
+          openCompletion.setPoints(quest.getPoints());
+
+          questCompletionRepository.save(openCompletion);
+        }
+      }
+    }
   }
 }
