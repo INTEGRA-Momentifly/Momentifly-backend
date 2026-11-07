@@ -1,5 +1,6 @@
 package integra.momentifly.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,8 +22,10 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    @ManyToOne(fetch=FetchType.LAZY, optional = true)
+    @JoinColumn(name="user_id", nullable = true)
+    @JsonIgnore
+    private User user;
 
     @Column(nullable = false)
     private String description;

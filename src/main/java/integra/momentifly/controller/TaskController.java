@@ -18,36 +18,31 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskController {
     private final TaskService taskService;
-    private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<?> getAllTasks(@RequestParam(required = false) UUID userId) {
-        if (userId == null) return ResponseEntity.ok(taskService.getAllTasks());
-
-        return ResponseEntity.ok(taskService.getAllTasksForUser(userId));
+    public ResponseEntity<?> getAllTasks(Authentication authentication) {
+        return ResponseEntity.ok(taskService.getAllTasksForUser(authentication.getName()));
     }
 
     @GetMapping("/task/{taskId}")
-    public ResponseEntity<?> getTaskById(@PathVariable UUID taskId) {
-        return ResponseEntity.ok(taskService.getTaskById(taskId));
+    public ResponseEntity<?> getTaskById(Authentication authentication, @PathVariable UUID taskId) {
+        return ResponseEntity.ok(taskService.getTaskById(taskId, authentication.getName()));
     }
 
     @PostMapping()
-    public ResponseEntity<?> createTask(Authentication authentication,@Valid @RequestBody WriteTaskRequest request) {
-        // when FK on task is implemented, change addTask to have the username directly as first param
-        UUID userId = userService.getUserByUsername(authentication.getName()).getId();
-        Task task = taskService.addTask(userId, request);
-        return ResponseEntity.ok(task);
+    public ResponseEntity<?> createTask(Authentication authentication, @Valid @RequestBody WriteTaskRequest request) {
+        return ResponseEntity.ok(taskService.addTask(authentication.getName(), request));
     }
 
     @PutMapping("/{taskId}")
-    public ResponseEntity<?> updateTask(@PathVariable UUID taskId, @Valid @RequestBody WriteTaskRequest request) {
-        return ResponseEntity.ok(taskService.updateTask(taskId, request));
+    public ResponseEntity<?> updateTask(Authentication authentication, @PathVariable UUID taskId,
+                                        @Valid @RequestBody WriteTaskRequest request) {
+        return ResponseEntity.ok(taskService.updateTask(taskId, authentication.getName(), request));
     }
 
     @DeleteMapping("/{taskId}")
-    public ResponseEntity<?> deleteTask(@PathVariable UUID taskId) {
-        taskService.removeTask(taskId);
+    public ResponseEntity<?> deleteTask(Authentication authentication, @PathVariable UUID taskId) {
+        taskService.removeTask(taskId, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }
