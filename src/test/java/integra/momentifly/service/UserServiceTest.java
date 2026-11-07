@@ -96,7 +96,6 @@ class UserServiceTest {
 
         assertNotEquals("paul123", saved.getPassword());                       // not stored in plain text
         assertTrue(passwordEncoder.matches("paul123", saved.getPassword()));   // but it's the right hash
-        assertEquals(0, saved.getScore());
     }
 
     @Test

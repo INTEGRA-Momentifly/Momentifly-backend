@@ -15,39 +15,43 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class QuestService {
 
-    private final QuestRepository questRepository;
+  private final QuestRepository questRepository;
+  private final UserService userService;
 
-    public Quest createQuest(UUID userId, CreateQuestRequest request) {
+  public List<Quest> findByUserId(UUID uuid){ return questRepository.findByUserId(uuid);}
+  public Quest createQuest(String authName, CreateQuestRequest request) {
+    UUID userId = userService.getUserByUsername(authName).getId();
+    Quest quest = new Quest();
+    quest.setDescription(request.description());
+    quest.setPoints(request.points());
+    quest.setUserId(userId);
+    return questRepository.save(quest);
+  }
 
-        Quest quest = new Quest();
-        quest.setDescription(request.description());
-        quest.setPoints(request.points());
-        quest.setUserId(userId);
-        return questRepository.save(quest);
-    }
+  public List<Quest> getAllQuests(String authName) {
+    UUID userId = userService.getUserByUsername(authName).getId();
+    return questRepository.findByUserId(userId);
+  }
 
-    public List<Quest> getAllQuests(UUID userId) {
-        return questRepository.findByUserId(userId);
-    }
+  public Optional<Quest> getQuestById(UUID id, String authName) {
+    UUID userId = userService.getUserByUsername(authName).getId();
+    return questRepository.findByIdAndUserId(id, userId);
+  }
 
-    public Optional<Quest> getQuestById(UUID id) {
-        return questRepository.findById(id);
-    }
+  public Quest updateQuest(UUID id, UpdateQuestRequest request, String authName) {
+    UUID userId = userService.getUserByUsername(authName).getId();
 
-    public Quest updateQuest(UUID id, UpdateQuestRequest request) {
+    return questRepository.findByIdAndUserId(id, userId)
+        .map(quest -> {
+          quest.setDescription(request.description());
+          quest.setPoints(request.points());
+          return questRepository.save(quest);
+        })
+        .orElseThrow(() -> new RuntimeException("Quest not found"));
+  }
 
-        Quest updatedQuest = questRepository.findById(id).get();
-        updatedQuest.setDescription(request.description());
-        updatedQuest.setPoints(request.points());
-        return questRepository.findById(id).map(quest -> {
-            quest.setDescription(updatedQuest.getDescription());
-            quest.setPoints(updatedQuest.getPoints());
-            quest.setUserId(updatedQuest.getUserId());
-            return questRepository.save(quest);
-        }).orElseThrow(() -> new RuntimeException("Quest not found"));
-    }
-
-    public void deleteQuest(UUID id) {
-        questRepository.deleteById(id);
-    }
+  public void deleteQuest(UUID id, String authName) {
+    UUID userId = userService.getUserByUsername(authName).getId();
+    questRepository.deleteByIdAndUserId(id, userId);
+  }
 }
