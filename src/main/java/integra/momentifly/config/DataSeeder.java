@@ -1,7 +1,17 @@
 package integra.momentifly.config;
 
-import integra.momentifly.model.*;
-import integra.momentifly.repository.*;
+import integra.momentifly.model.Difficulty;
+import integra.momentifly.model.Quest;
+import integra.momentifly.model.RecurrenceEnum;
+import integra.momentifly.model.Reminder;
+import integra.momentifly.model.Subscription;
+import integra.momentifly.model.Task;
+import integra.momentifly.model.User;
+import integra.momentifly.repository.QuestRepository;
+import integra.momentifly.repository.ReminderRepository;
+import integra.momentifly.repository.SubscriptionRepository;
+import integra.momentifly.repository.TaskRepository;
+import integra.momentifly.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -40,7 +50,9 @@ public class DataSeeder implements CommandLineRunner {
     // ---------- USERS ----------
 
     private void seedUsers() {
-        if (userRepository.count() > 0) return;
+        if (userRepository.count() > 0) {
+            return;
+        }
         userRepository.saveAll(List.of( // seeding hashed passwords by default
                                         // password is "test123" for every user
                 newUser("Paul", "paul@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 120, 2000.0),
@@ -65,7 +77,9 @@ public class DataSeeder implements CommandLineRunner {
     // ---------- QUESTS ----------
 
     private void seedQuests() {
-        if (questRepository.count() > 0) return;
+        if (questRepository.count() > 0) {
+            return;
+        }
         questRepository.saveAll(List.of(
                 newQuest("Drink a full glass of water within 30 minutes of waking up.", 10),
                 newQuest("Walk at least 8,000 steps today.", 20),
@@ -88,7 +102,9 @@ public class DataSeeder implements CommandLineRunner {
     // ---------- TASKS ----------
 
     private void seedTasks(Map<String, User> users) {
-        if (taskRepository.count() > 0) return;
+        if (taskRepository.count() > 0) {
+            return;
+        }
 
         // NEED AN ACTUAL USER AFTER FK IS IMPLEMENTED ON THE REMINDER MODEL
         UUID user = UUID.fromString("a1b2c3d4-0000-0000-0000-000000000001");
@@ -117,7 +133,9 @@ public class DataSeeder implements CommandLineRunner {
     // ---------- REMINDERS ----------
 
     private void seedReminders(Map<String, User> users) {
-        if (reminderRepository.count() > 0) return;
+        if (reminderRepository.count() > 0) {
+            return;
+        }
         // NEED AN ACTUAL USER AFTER FK IS IMPLEMENTED ON THE REMINDER MODEL
         UUID user = UUID.fromString("a1b2c3d4-0000-0000-0000-000000000001");
 
@@ -142,7 +160,9 @@ public class DataSeeder implements CommandLineRunner {
     // ---------- SUBSCRIPTIONS ----------
 
     private void seedSubscriptions(Map<String, User> users) {
-        if (subscriptionRepository.count() > 0) return;
+        if (subscriptionRepository.count() > 0) {
+            return;
+        }
         User paul = users.get("Paul");
 
         subscriptionRepository.saveAll(List.of(

@@ -23,6 +23,9 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./gradlew
 
+    - name: Lint (Checkstyle)
+      run: ./gradlew checkstyleMain checkstyleTest
+
     - name: Build and Test with Gradle
       run: ./gradlew build
 

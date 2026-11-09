@@ -100,7 +100,9 @@
       <property name="query" value="/COMPACT_COMPILATION_UNIT"/>
       <message key="matchxpath.match" value="Compact source file is not allowed."/>
     </module>
-    <module name="AvoidStarImport"/>
+    <module name="AvoidStarImport">
+      <property name="severity" value="error"/>
+    </module>
     <module name="AvoidModuleImport"/>
     <module name="OneTopLevelClass"/>
     <module name="NoLineWrap">
@@ -111,6 +113,7 @@
     <module name="ModuleDirectiveOrder"/>
 
     <module name="NeedBraces">
+      <property name="severity" value="error"/>
       <property name="tokens"
                value="LITERAL_DO, LITERAL_ELSE, LITERAL_FOR, LITERAL_IF, LITERAL_WHILE"/>
     </module>
@@ -465,6 +468,7 @@
                value="Comment uses box-like repetitive character pattern."/>
     </module>
     <module name="EmptyCatchBlock">
+      <property name="severity" value="error"/>
       <property name="commentFormat" value="\w+"/>
     </module>
     <module name="CommentsIndentation">
