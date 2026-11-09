@@ -22,7 +22,7 @@ repositories {
 checkstyle {
     toolVersion = "14.3.0"
     configFile = file("config/checkstyle/google_checks.xml")
-    isIgnoreFailures = true
+    isIgnoreFailures = false
 }
 
 dependencies {

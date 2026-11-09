@@ -33,8 +33,9 @@ public class UserService {
     }
 
     public User createUser(CreateUserRequest userRequest) {
-        if (userRepository.existsByUsername(userRequest.username()))
+        if (userRepository.existsByUsername(userRequest.username())) {
             throw new InvalidDataException("Username already taken");
+        }
 
         if (userRepository.existsByEmail(userRequest.email())) {
             throw new InvalidDataException("Email is already registered");
@@ -52,8 +53,9 @@ public class UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        if (!passwordEncoder.matches(changePasswordRequest.currentPassword(), user.getPassword()))
+        if (!passwordEncoder.matches(changePasswordRequest.currentPassword(), user.getPassword())) {
             throw new InvalidDataException("Passwords don't match");
+        }
 
         user.setPassword(passwordEncoder.encode(changePasswordRequest.newPassword()));
         userRepository.save(user);

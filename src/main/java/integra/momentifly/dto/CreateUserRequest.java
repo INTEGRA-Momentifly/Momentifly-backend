@@ -1,6 +1,10 @@
 package integra.momentifly.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 public record CreateUserRequest(@NotBlank(message = "Username is required")
                                 @Size(min = 3, max = 30, message = "Username must be between 3 and 30 characters")
