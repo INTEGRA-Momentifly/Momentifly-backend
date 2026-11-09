@@ -43,8 +43,9 @@ public class TaskService {
     }
 
     public void removeTask(UUID taskId) throws NotFoundException {
-        if (!taskRepository.existsById(taskId))
+        if (!taskRepository.existsById(taskId)) {
             throw new NotFoundException("Task not found");
+        }
         taskRepository.deleteById(taskId);
     }
 
