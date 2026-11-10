@@ -47,6 +47,17 @@ public class QuestController {
         .orElseGet(() -> ResponseEntity.badRequest().build());
   }
 
+  @GetMapping("/completedQuests")
+  public ResponseEntity<List<UUID>> getCompletedQuests(
+      Authentication authentication
+  ) {
+    return ResponseEntity.ok(
+        questCompletionService.getCompletedQuestIds(
+            authentication.getName()
+        )
+    );
+  }
+
   @GetMapping("/weekScore")
   public Integer weekScore(Authentication authentication, @RequestParam LocalDateTime date){
     return questCompletionService.weekScore(date, authentication.getName());
