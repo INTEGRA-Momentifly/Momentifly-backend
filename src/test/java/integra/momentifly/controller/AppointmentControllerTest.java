@@ -3,19 +3,18 @@ package integra.momentifly.controller;
 import integra.momentifly.dto.AppointmentRequest;
 import integra.momentifly.model.Appointment;
 import integra.momentifly.service.AppointmentService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -118,7 +117,8 @@ class AppointmentControllerTest {
     request.setStartDate(appointment.getStartDate());
     request.setEndDate(appointment.getEndDate());
 
-    when(appointmentService.updateAppointment(eq(appointmentId), any(Appointment.class))).thenReturn(appointment);
+    when(appointmentService.updateAppointment(eq(appointmentId), any(Appointment.class)))
+        .thenReturn(appointment);
 
     ResponseEntity<Appointment> response = appointmentController.updateAppointment(appointmentId, request);
 

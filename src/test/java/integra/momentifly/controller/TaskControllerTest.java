@@ -1,11 +1,12 @@
 package integra.momentifly.controller;
 
 import integra.momentifly.dto.WriteTaskRequest;
-import integra.momentifly.exception.InvalidDataException;
 import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.Difficulty;
 import integra.momentifly.model.Task;
+import integra.momentifly.model.User;
 import integra.momentifly.service.TaskService;
+import integra.momentifly.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,190 +24,168 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class TaskControllerTest {
 
-    @Mock
-    private TaskService taskService;
+  @Mock
+  private TaskService taskService;
 
-    @InjectMocks
-    private TaskController taskController;
+  @Mock
+  private UserService userService;
 
-    @Test
-    void getAllTasks_Returns200AndList() {
-        Task task1 = new Task();
-        Task task2 = new Task();
+  @InjectMocks
+  private TaskController taskController;
 
-        when(taskService.getAllTasks()).thenReturn(List.of(task1, task2));
+  @Test
+  void getAllTasks_Returns200AndList() {
+    Task task1 = new Task();
+    Task task2 = new Task();
 
-        ResponseEntity<?> response = taskController.getAllTasks(null);
+    when(taskService.getAllTasks()).thenReturn(List.of(task1, task2));
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(List.of(task1, task2), response.getBody());
-    }
+    ResponseEntity<?> response = taskController.getAllTasks(null);
 
-    @Test
-    void getTasksForUser_Returns200AndList() {
-        Task task1 = new Task();
-        Task task2 = new Task();
-        UUID userId = UUID.randomUUID();
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(List.of(task1, task2), response.getBody());
+  }
 
-        when(taskService.getAllTasksForUser(userId))
-                .thenReturn(List.of(task1, task2));
+  @Test
+  void getTasksForUser_Returns200AndList() {
+    Task task1 = new Task();
+    Task task2 = new Task();
+    UUID userId = UUID.randomUUID();
 
-        ResponseEntity<?> response = taskController.getAllTasks(userId);
+    when(taskService.getAllTasksForUser(userId))
+        .thenReturn(List.of(task1, task2));
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(List.of(task1, task2), response.getBody());
-    }
+    ResponseEntity<?> response = taskController.getAllTasks(userId);
 
-    @Test
-    void getTask_Returns200_WhenFound() {
-        UUID taskId = UUID.randomUUID();
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(List.of(task1, task2), response.getBody());
+  }
 
-        Task task = new Task();
-        task.setDescription("Found task");
+  @Test
+  void getTask_Returns200_WhenFound() {
+    UUID taskId = UUID.randomUUID();
 
-        when(taskService.getTaskById(taskId)).thenReturn(task);
+    Task task = new Task();
+    task.setDescription("Found task");
 
-        ResponseEntity<?> response = taskController.getTaskById(taskId);
+    when(taskService.getTaskById(taskId)).thenReturn(task);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(task, response.getBody());
-    }
+    ResponseEntity<?> response = taskController.getTaskById(taskId);
 
-    @Test
-    void getTask_ThrowsNotFoundException_WhenNotFound() {
-        UUID taskId = UUID.randomUUID();
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(task, response.getBody());
+  }
 
-        when(taskService.getTaskById(taskId))
-                .thenThrow(new NotFoundException("Task not found"));
+  @Test
+  void getTask_ThrowsNotFoundException_WhenNotFound() {
+    UUID taskId = UUID.randomUUID();
 
-        assertThrows(
-                NotFoundException.class,
-                () -> taskController.getTaskById(taskId)
-        );
-    }
+    when(taskService.getTaskById(taskId))
+        .thenThrow(new NotFoundException("Task not found"));
 
-    @Test
-    void createTask_Returns200_WhenOk() {
-        WriteTaskRequest request = new WriteTaskRequest(
-                "New task",
-                LocalDate.of(2026, 10, 1),
-                Difficulty.MEDIUM
-        );
+    assertThrows(
+        NotFoundException.class,
+        () -> taskController.getTaskById(taskId)
+    );
+  }
 
-        Task createdTask = new Task();
-        createdTask.setDescription("Created task");
+  @Test
+  void createTask_Returns200_WhenOk() {
+    WriteTaskRequest request = new WriteTaskRequest(
+        "New task",
+        LocalDate.of(2026, 10, 1),
+        Difficulty.MEDIUM
+    );
 
-        when(taskService.addTask(any(), any(), any(), any()))
-                .thenReturn(createdTask);
+    Task createdTask = new Task();
+    createdTask.setDescription("Created task");
 
-        ResponseEntity<?> response =
-                taskController.createTask(UUID.randomUUID(), request);
+    when(taskService.addTask(any(), any()))
+        .thenReturn(createdTask);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(createdTask, response.getBody());
-    }
+    Authentication authentication = org.mockito.Mockito.mock(Authentication.class);
+    when(authentication.getName()).thenReturn("test-user");
 
-    @Test
-    void createTask_ThrowsInvalidTaskDataException_WhenInvalid() {
-        WriteTaskRequest request = new WriteTaskRequest(
-                null,
-                null,
-                null
-        );
+    User mockUser = new User();
+    UUID fakeUserId = UUID.randomUUID();
+    mockUser.setId(fakeUserId);
+    when(userService.getUserByUsername("test-user")).thenReturn(mockUser);
 
-        when(taskService.addTask(any(), any(), any(), any()))
-                .thenThrow(new InvalidDataException(
-                        "description, dueDate, and difficulty are all required"
-                ));
+    when(taskService.addTask(eq(fakeUserId), any()))
+        .thenReturn(createdTask);
 
-        assertThrows(
-                InvalidDataException.class,
-                () -> taskController.createTask(UUID.randomUUID(), request)
-        );
-    }
+    ResponseEntity<?> response =
+        taskController.createTask(authentication, request);
 
-    @Test
-    void deleteTask_Returns204_WhenFound() {
-        UUID taskId = UUID.randomUUID();
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(createdTask, response.getBody());
+  }
 
-        ResponseEntity<?> response = taskController.deleteTask(taskId);
 
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
+  @Test
+  void deleteTask_Returns204_WhenFound() {
+    UUID taskId = UUID.randomUUID();
 
-    @Test
-    void deleteTask_ThrowsNotFoundException_WhenNotFound() {
-        UUID taskId = UUID.randomUUID();
+    ResponseEntity<?> response = taskController.deleteTask(taskId);
 
-        doThrow(new NotFoundException("Task not found"))
-                .when(taskService)
-                .removeTask(taskId);
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+  }
 
-        assertThrows(
-                NotFoundException.class,
-                () -> taskController.deleteTask(taskId)
-        );
-    }
+  @Test
+  void deleteTask_ThrowsNotFoundException_WhenNotFound() {
+    UUID taskId = UUID.randomUUID();
 
-    @Test
-    void updateTask_Returns200_WhenOk() {
-        WriteTaskRequest request = new WriteTaskRequest(
-                "New task",
-                LocalDate.of(2026, 10, 1),
-                Difficulty.MEDIUM
-        );
+    doThrow(new NotFoundException("Task not found"))
+        .when(taskService)
+        .removeTask(taskId);
 
-        Task updatedTask = new Task();
+    assertThrows(
+        NotFoundException.class,
+        () -> taskController.deleteTask(taskId)
+    );
+  }
 
-        when(taskService.updateTask(any(), any(), any(), any()))
-                .thenReturn(updatedTask);
+  @Test
+  void updateTask_Returns200_WhenOk() {
+    WriteTaskRequest request = new WriteTaskRequest(
+        "New task",
+        LocalDate.of(2026, 10, 1),
+        Difficulty.MEDIUM
+    );
 
-        ResponseEntity<?> response =
-                taskController.updateTask(UUID.randomUUID(), request);
+    Task updatedTask = new Task();
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(updatedTask, response.getBody());
-    }
+    when(taskService.updateTask(any(), any()))
+        .thenReturn(updatedTask);
 
-    @Test
-    void updateTask_ThrowsInvalidTaskDataException_WhenInvalid() {
-        WriteTaskRequest request = new WriteTaskRequest(
-                null,
-                null,
-                null
-        );
+    ResponseEntity<?> response =
+        taskController.updateTask(UUID.randomUUID(), request);
 
-        when(taskService.updateTask(any(), any(), any(), any()))
-                .thenThrow(new InvalidDataException(
-                        "description, dueDate, and difficulty are all required"
-                ));
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(updatedTask, response.getBody());
+  }
 
-        assertThrows(
-                InvalidDataException.class,
-                () -> taskController.updateTask(UUID.randomUUID(), request)
-        );
-    }
+  @Test
+  void updateTask_ThrowsNotFoundException_WhenNotFound() {
+    WriteTaskRequest request = new WriteTaskRequest(
+        "New task",
+        LocalDate.of(2026, 10, 1),
+        Difficulty.MEDIUM
+    );
 
-    @Test
-    void updateTask_ThrowsNotFoundException_WhenNotFound() {
-        WriteTaskRequest request = new WriteTaskRequest(
-                "New task",
-                LocalDate.of(2026, 10, 1),
-                Difficulty.MEDIUM
-        );
+    when(taskService.updateTask(any(),any()))
+        .thenThrow(new NotFoundException("Task not found"));
 
-        when(taskService.updateTask(any(), any(), any(), any()))
-                .thenThrow(new NotFoundException("Task not found"));
-
-        assertThrows(
-                NotFoundException.class,
-                () -> taskController.updateTask(UUID.randomUUID(), request)
-        );
-    }
+    assertThrows(
+        NotFoundException.class,
+        () -> taskController.updateTask(UUID.randomUUID(), request)
+    );
+  }
 }
