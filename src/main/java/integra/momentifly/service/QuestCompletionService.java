@@ -49,6 +49,11 @@ public class QuestCompletionService {
     return Optional.of(questCompletionRepository.save(questCompletion));
   }
 
+  public List<UUID> getCompletedQuestIds(String authName) {
+    UUID userId = userService.getUserByUsername(authName).getId();
+    return questCompletionRepository.findCompletedQuestIds(userId, QuestEnum.COMPLETE);
+  }
+
   public Integer weekScore(LocalDateTime date, String authName){
     UUID userId = userService.getUserByUsername(authName).getId();
 

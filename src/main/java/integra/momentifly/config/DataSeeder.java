@@ -41,7 +41,7 @@ public class DataSeeder implements CommandLineRunner {
     Map<String, User> users = userRepository.findAll().stream()
         .collect(Collectors.toMap(User::getUsername, Function.identity()));
 
-    //seedQuests();
+    seedQuests(users);
     seedTasks(users);
     seedReminders(users);
     seedSubscriptions(users);
