@@ -1,12 +1,6 @@
 package integra.momentifly.model;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,32 +9,28 @@ import java.util.UUID;
 
 @Entity
 @Table(name="task")
+@Getter @Setter
 public class Task {
 
-    @Getter
     @Id
     @GeneratedValue(strategy= GenerationType.UUID)
     private UUID id;
 
-    // setter for now but maybe remove later
-    // join column, many to one relationship here but only once the user model is finished
-    @Getter @Setter
-    @Column(columnDefinition = "uuid", nullable = false)
-    private UUID userId;
+    @ManyToOne(fetch=FetchType.LAZY, optional = true)
+    @JoinColumn(name="user_id", nullable = true)
+    @JsonIgnore
+    private User user;
 
-    @Getter @Setter
     @Column(length=255, nullable=false)
     private String description;
 
-    @Getter @Setter
     @Column(nullable=false)
     private LocalDate dueDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Getter @Setter
     private Difficulty difficulty;
 
-    @Getter @Setter
+    @Column(name = "completed")
     private Boolean completed  = false;
 }

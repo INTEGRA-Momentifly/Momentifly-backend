@@ -2,13 +2,13 @@ package integra.momentifly.service;
 
 import integra.momentifly.dto.CreateSubscriptionRequest;
 import integra.momentifly.dto.UpdateSubscriptionRequest;
+import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.Subscription;
 import integra.momentifly.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -16,53 +16,35 @@ import java.util.UUID;
 public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
+    private final UserService userService;
 
-    public Subscription createSubscription(CreateSubscriptionRequest createSubscriptionRequest){
-
-//        TEMPORAR: Nu setăm user-ul până nu este gata modulul de User/UserRepository
-//        Când va fi creat UserRepository, aici vei adăuga:
-//        User user = userRepository.findById(createSubscriptionRequest.getUserId()).orElseThrow(...)
-//        subscription.setUser(user);
-
+    public Subscription createSubscription(String username, CreateSubscriptionRequest createSubscriptionRequest){
         Subscription newSubscription = new Subscription();
+        newSubscription.setUser(userService.getUserByUsername(username));
         newSubscription.setCost(createSubscriptionRequest.getCost());
         newSubscription.setName(createSubscriptionRequest.getName());
         newSubscription.setEndDate(createSubscriptionRequest.getEndDate());
-
         return subscriptionRepository.save(newSubscription);
     }
 
-    public Subscription updateSubscription(UUID id, UpdateSubscriptionRequest updateSubscriptionRequest){
-
-        Subscription existingSubscription = subscriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Subscription not found with id: " + id));
-
+    public Subscription updateSubscription(UUID id, String username, UpdateSubscriptionRequest updateSubscriptionRequest){
+        Subscription existingSubscription = findSubscriptionById(id, username);
         existingSubscription.setName(updateSubscriptionRequest.getName());
         existingSubscription.setCost(updateSubscriptionRequest.getCost());
         existingSubscription.setEndDate(updateSubscriptionRequest.getEndDate());
-
-//        Când UserRepository va fi pregătit, decomentezi liniile de mai jos:
-//        User newUser = userRepository.findById(request.getUserId())
-//                .orElseThrow(() -> new RuntimeException("User not found with id: " + request.getUserId()));
-//        existingSubscription.setUser(newUser);
-
         return subscriptionRepository.save(existingSubscription);
     }
 
-    public void deleteSubscription(UUID id){
-        subscriptionRepository.deleteById(id);
+    public void deleteSubscription(UUID id, String username){
+        subscriptionRepository.delete(findSubscriptionById(id, username));
     }
 
-    public Optional<Subscription> findSubscriptionById(UUID id){
-        return subscriptionRepository.findById(id);
+    public Subscription findSubscriptionById(UUID id, String username){
+        return subscriptionRepository.findByIdAndUser_Username(id, username)
+                .orElseThrow(() -> new NotFoundException("Subscription not found"));
     }
 
-    public List<Subscription> getAllSubscriptions(){
-        return subscriptionRepository.findAll();
-    }
-
-    //this is based on the diagram suggested method
-    public List<Subscription> getSubscriptionsByUserId(UUID user_id){
-        return subscriptionRepository.findByUserId(user_id);
+    public List<Subscription> getSubscriptionsForUser(String username){
+        return subscriptionRepository.findByUser_Username(username);
     }
 }

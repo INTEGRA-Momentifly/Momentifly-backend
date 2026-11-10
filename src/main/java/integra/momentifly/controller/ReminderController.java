@@ -5,21 +5,16 @@ import integra.momentifly.dto.ReminderResponse;
 import integra.momentifly.mapper.ReminderMapper;
 import integra.momentifly.model.Reminder;
 import integra.momentifly.service.ReminderService;
+import integra.momentifly.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/reminder")
 @RequiredArgsConstructor
@@ -29,59 +24,32 @@ public class ReminderController {
     private final ReminderMapper mapper;
 
     @GetMapping
-    public List<ReminderResponse> getAllReminders(@RequestParam(required = false) UUID userId) {
-        if(userId!=null){
-            return reminderService.findByUserId(userId)
-                    .stream()
-                    .map(mapper::toDto)
-                    .toList();
-        }
-        return reminderService.findAll()
+    public List<ReminderResponse> getRemindersByUser(Authentication authentication) {
+        return reminderService.findByUsername(authentication.getName())
                 .stream()
                 .map(mapper::toDto)
                 .toList();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ReminderResponse> getReminderById(@PathVariable UUID id) {
-        return reminderService.findById(id)
-                .map(mapper::toDto)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ReminderResponse> getReminderById(Authentication authentication, @PathVariable UUID id) {
+        return ResponseEntity.ok(mapper.toDto(reminderService.findById(id, authentication.getName())));
     }
 
     @PostMapping
-    public ReminderResponse create(@Valid  @RequestBody ReminderRequest reminder) {
-        return mapper.toDto(
-                reminderService.save(mapper.fromDto(reminder))
-        );
+    public ReminderResponse create(Authentication authentication, @Valid @RequestBody ReminderRequest request) {
+        return mapper.toDto(reminderService.createReminder(authentication.getName(), request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ReminderResponse> update(
-            @PathVariable UUID id,
-            @Valid @RequestBody ReminderRequest reminderRequest) {
-
-        if (reminderService.findById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Reminder reminder = mapper.fromDto(reminderRequest);
-        reminder.setId(id);
-
-        Reminder updated = reminderService.save(reminder);
-
-        return ResponseEntity.ok(mapper.toDto(updated));
+    public ResponseEntity<ReminderResponse> update(Authentication authentication, @PathVariable UUID id,
+                                                   @Valid @RequestBody ReminderRequest request) {
+        return ResponseEntity.ok(mapper.toDto(reminderService.updateReminder(id, authentication.getName(), request)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-
-        if (!reminderService.findById(id).isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        reminderService.deleteById(id);
+    public ResponseEntity<Void> delete(Authentication authentication, @PathVariable UUID id) {
+        reminderService.deleteById(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }

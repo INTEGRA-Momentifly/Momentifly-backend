@@ -3,16 +3,12 @@ package integra.momentifly.controller;
 import integra.momentifly.dto.AppointmentRequest;
 import integra.momentifly.model.Appointment;
 import integra.momentifly.service.AppointmentService;
+import integra.momentifly.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,52 +20,31 @@ public class AppointmentController {
 
     private final AppointmentService service;
 
-    // Create an Appointment
     @PostMapping
-    public ResponseEntity<Appointment> createAppointment(@RequestBody AppointmentRequest request) {
-        // Mapăm datele din DTO (cerere) în Entitate
-        Appointment appointment = new Appointment();
-        appointment.setUserId(request.getUserId());
-        appointment.setDescription(request.getDescription());
-        appointment.setStartDate(request.getStartDate());
-        appointment.setEndDate(request.getEndDate());
-        return ResponseEntity.ok(service.createAppointment(appointment));
+    public ResponseEntity<Appointment> createAppointment(Authentication authentication,
+                                                         @Valid @RequestBody AppointmentRequest request) {
+        return ResponseEntity.ok(service.createAppointment(authentication.getName(), request));
     }
 
-    // List all Appointments
     @GetMapping
-    public ResponseEntity<List<Appointment>> getAllAppointments() {
-        return ResponseEntity.ok(service.getAllAppointments());
+    public ResponseEntity<List<Appointment>> getAllAppointments(Authentication authentication) {
+        return ResponseEntity.ok(service.getAppointmentsForUser(authentication.getName()));
     }
 
-    // Get Appointment by id
     @GetMapping("/{id}")
-    public ResponseEntity<Appointment> getAppointmentById(@PathVariable UUID id) {
-        return service.getAppointmentById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Appointment> getAppointmentById(Authentication authentication, @PathVariable UUID id) {
+        return ResponseEntity.ok(service.getAppointmentById(id, authentication.getName()));
     }
 
-    // Update an Appointment
     @PutMapping("/{id}")
-    public ResponseEntity<Appointment> updateAppointment(@PathVariable UUID id, @RequestBody AppointmentRequest request) {
-        try {
-            // Mapăm datele din DTO în Entitate pentru update
-            Appointment appointmentDetails = new Appointment();
-            appointmentDetails.setUserId(request.getUserId());
-            appointmentDetails.setDescription(request.getDescription());
-            appointmentDetails.setStartDate(request.getStartDate());
-            appointmentDetails.setEndDate(request.getEndDate());
-            return ResponseEntity.ok(service.updateAppointment(id, appointmentDetails));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Appointment> updateAppointment(Authentication authentication, @PathVariable UUID id,
+                                                         @Valid @RequestBody AppointmentRequest request) {
+        return ResponseEntity.ok(service.updateAppointment(id, authentication.getName(), request));
     }
 
-    // Delete an Appointment
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAppointment(@PathVariable UUID id) {
-        service.deleteAppointment(id);
+    public ResponseEntity<Void> deleteAppointment(Authentication authentication, @PathVariable UUID id) {
+        service.deleteAppointment(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }
