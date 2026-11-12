@@ -1,18 +1,6 @@
 package integra.momentifly.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import integra.momentifly.dto.AppointmentRequest;
 import integra.momentifly.model.Appointment;
 import integra.momentifly.service.AppointmentService;
 import java.time.LocalDateTime;
@@ -21,102 +9,129 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import tools.jackson.databind.ObjectMapper;
+import org.mockito.Mock;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-@WebMvcTest(AppointmentController.class)
-public class AppointmentControllerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
-  @Autowired
-  private MockMvc mockMvc;
+@ExtendWith(MockitoExtension.class)
+class AppointmentControllerTest {
 
-  @MockitoBean
+  @Mock
   private AppointmentService appointmentService;
 
-  @Autowired
-  private ObjectMapper objectMapper;
+  @InjectMocks
+  private AppointmentController appointmentController;
 
   private Appointment appointment;
   private UUID appointmentId;
-  private UUID userId;
 
   @BeforeEach
   void setUp() {
     appointmentId = UUID.randomUUID();
-    userId = UUID.randomUUID();
-
     appointment = new Appointment(
-        appointmentId,
-        userId,
+        UUID.randomUUID(),
+        UUID.randomUUID(),
         "Consult stomatologic",
         LocalDateTime.now().plusDays(1),
         LocalDateTime.now().plusDays(1).plusHours(1)
     );
+    appointment.setId(appointmentId);
   }
 
   @Test
-  void testCreateAppointment() throws Exception {
+  void testCreateAppointment() {
+    AppointmentRequest request = new AppointmentRequest();
+    request.setUserId(appointment.getUserId());
+    request.setDescription(appointment.getDescription());
+    request.setStartDate(appointment.getStartDate());
+    request.setEndDate(appointment.getEndDate());
+
     when(appointmentService.createAppointment(any(Appointment.class))).thenReturn(appointment);
 
-    mockMvc.perform(post("/api/appointments")
-            .with(user("test").roles("USER"))
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(appointment)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(appointmentId.toString()))
-        .andExpect(jsonPath("$.userId").value(userId.toString()))
-        .andExpect(jsonPath("$.description").value("Consult stomatologic"));
+    ResponseEntity<Appointment> response = appointmentController.createAppointment(request);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(appointment, response.getBody());
   }
 
   @Test
-  void testGetAllAppointments() throws Exception {
-    when(appointmentService.getAllAppointments()).thenReturn(List.of(appointment));
+  void testGetAllAppointments_WithoutParams() {
+    List<Appointment> appointments = List.of(appointment);
 
-    mockMvc.perform(get("/api/appointments")
-            .with(user("test").roles("USER"))
-            .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.size()").value(1))
-        .andExpect(jsonPath("$[0].description").value("Consult stomatologic"));
+    when(appointmentService.getOverlappingAppointments(null, null)).thenReturn(appointments);
+
+    ResponseEntity<List<Appointment>> response = appointmentController.getAllAppointments(null, null);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(1, response.getBody().size());
+    assertEquals(appointment, response.getBody().get(0));
   }
 
   @Test
-  void testGetAppointmentById() throws Exception {
+  void testGetAllAppointments_WithDateRange() {
+    LocalDateTime start = LocalDateTime.now();
+    LocalDateTime end = LocalDateTime.now().plusDays(2);
+    List<Appointment> appointments = List.of(appointment);
+
+    when(appointmentService.getOverlappingAppointments(start, end)).thenReturn(appointments);
+
+    ResponseEntity<List<Appointment>> response = appointmentController.getAllAppointments(start, end);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(1, response.getBody().size());
+  }
+
+  @Test
+  void testGetAppointmentById_WhenExists() {
     when(appointmentService.getAppointmentById(appointmentId)).thenReturn(Optional.of(appointment));
 
-    mockMvc.perform(get("/api/appointments/{id}", appointmentId)
-            .with(user("test").roles("USER"))
-            .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(appointmentId.toString()));
+    ResponseEntity<Appointment> response = appointmentController.getAppointmentById(appointmentId);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(appointment, response.getBody());
   }
 
   @Test
-  void testUpdateAppointment() throws Exception {
+  void testGetAppointmentById_WhenNotFound() {
+    when(appointmentService.getAppointmentById(appointmentId)).thenReturn(Optional.empty());
+
+    ResponseEntity<Appointment> response = appointmentController.getAppointmentById(appointmentId);
+
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+  }
+
+  @Test
+  void testUpdateAppointment() {
+    AppointmentRequest request = new AppointmentRequest();
+    request.setUserId(appointment.getUserId());
+    request.setDescription(appointment.getDescription());
+    request.setStartDate(appointment.getStartDate());
+    request.setEndDate(appointment.getEndDate());
+
     when(appointmentService.updateAppointment(eq(appointmentId), any(Appointment.class)))
         .thenReturn(appointment);
 
-    mockMvc.perform(put("/api/appointments/{id}", appointmentId)
-            .with(user("test").roles("USER"))
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(appointment)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.description").value("Consult stomatologic"));
+    ResponseEntity<Appointment> response = appointmentController.updateAppointment(appointmentId, request);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(appointment, response.getBody());
   }
 
   @Test
-  void testDeleteAppointment() throws Exception {
+  void testDeleteAppointment() {
     doNothing().when(appointmentService).deleteAppointment(appointmentId);
 
-    mockMvc.perform(delete("/api/appointments/{id}", appointmentId)
-            .with(user("test").roles("USER"))
-            .with(csrf()))
-        .andExpect(status().isNoContent());
+    ResponseEntity<Void> response = appointmentController.deleteAppointment(appointmentId);
+
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
   }
 }

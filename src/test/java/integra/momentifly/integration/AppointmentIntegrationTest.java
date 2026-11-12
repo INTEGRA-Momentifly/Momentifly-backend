@@ -37,11 +37,15 @@ public class AppointmentIntegrationTest extends BaseIntegrationTest {
 
   @Test
   void shouldReturnAppointmentsFromRealDatabase() throws Exception {
-    mockMvc.perform(get("/api/appointments").with(user("test").roles("USER")))
+    LocalDateTime now = LocalDateTime.now();
+
+    mockMvc.perform(get("/api/appointments")
+            .param("startDate", now.toString())
+            .param("endDate", now.plusDays(2).toString())
+            .with(user("test").roles("USER")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.size()").value(1))
-        .andExpect(jsonPath("$[0].description").value("Consult de integrare Testcontainers"));
-  }
+        .andExpect(jsonPath("$[0].description").value("Consult de integrare Testcontainers"));  }
 
   @Test
   void shouldReturn401WhenNotAuthenticated() throws Exception {
