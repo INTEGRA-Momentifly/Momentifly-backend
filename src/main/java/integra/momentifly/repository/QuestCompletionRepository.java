@@ -26,4 +26,5 @@ public interface QuestCompletionRepository extends JpaRepository<QuestCompletion
       @Param("status") QuestEnum status
   );
   List<QuestCompletion> findByUserIdAndCompletionDateBetween(UUID userId, LocalDateTime start, LocalDateTime end);
+  List<QuestCompletion> findByUserId(UUID userId);
 }
