@@ -2,24 +2,16 @@ package integra.momentifly.service;
 
 import integra.momentifly.model.*;
 import integra.momentifly.repository.QuestCompletionRepository;
-import integra.momentifly.repository.ReminderRepository;
-import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -100,31 +92,6 @@ public class QuestCompletionService {
     questCompletionRepository.deleteById(id);
   }
 
-  public Integer computeStreak(Authentication authentication){
-      Integer streak = 0;
-      UUID userId = userService.getUserByUsername(authentication.getName()).getId();
-      List<QuestCompletion> completions = questCompletionRepository.findByUserId(userId);
-
-      // reverse order => first elem holds the most recent date (has to be yesterday)
-      completions.sort(Comparator.comparing(QuestCompletion::getCompletionDate).reversed());
-
-      if (completions.getFirst().getCompletionDate().isBefore(LocalDateTime.now().minusDays(1)))
-          return streak;
-
-      // then just find the longest sequence of completions that have a time difference equal to at most a day
-      // and return that streak
-      // then in the controller just call this method and send the integer
-      int n = completions.size();
-      for(int i = 0; i < n - 1; ++i){
-          // we take i and i + 1 as positions, and we check the date difference
-          var diff = completions.get(i + 1).getCompletionDate().until(completions.get(i).getCompletionDate(), ChronoUnit.DAYS);
-          if (diff > 1) break;
-          ++streak;
-      }
-
-      return streak;
-  }
-
   @Scheduled(cron = "0 0 0 * * *")
   @Transactional
   public void registerMissedQuestsDaily() {
@@ -151,4 +118,32 @@ public class QuestCompletionService {
       }
     }
   }
+
+    public int computeStreak(String username) {
+        UUID userId = userService.getUserByUsername(username).getId();
+
+        List<LocalDate> completionDays = questCompletionRepository.findByUserId(userId).stream()
+                .filter(q -> q.getCompletionStatus() == QuestEnum.COMPLETE)
+                .map(QuestCompletion::getCompletionDate)
+                .filter(Objects::nonNull )
+                .map(LocalDateTime::toLocalDate)
+                .distinct()
+                .sorted(Comparator.reverseOrder())   // newest first
+                .toList();
+
+        return streakFrom(completionDays, LocalDate.now());
+    }
+
+    // completionDays: newest first
+    static int streakFrom(List<LocalDate> completionDays, LocalDate today) {
+        if (completionDays.isEmpty() || completionDays.getFirst().isBefore(today.minusDays(1)))
+            return 0;   // no quests yet, or the last one was before yesterday
+
+        int streak = 1;   // the newest day counts
+        for (int i = 0; i < completionDays.size() - 1; ++i) {
+            if (ChronoUnit.DAYS.between(completionDays.get(i + 1), completionDays.get(i)) != 1) break;
+                ++streak;
+        }
+        return streak;
+    }
 }

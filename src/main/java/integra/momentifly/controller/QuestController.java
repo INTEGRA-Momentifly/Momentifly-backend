@@ -60,8 +60,7 @@ public class QuestController {
 
   @GetMapping("/streak")
   public ResponseEntity<?> getStreak(Authentication authentication){
-      // TODO does this work? do i need more?
-      return ResponseEntity.ok(questCompletionService.computeStreak(authentication));
+      return ResponseEntity.ok(questCompletionService.computeStreak(authentication.getName()));
   }
 
   @GetMapping("/weekScore")
