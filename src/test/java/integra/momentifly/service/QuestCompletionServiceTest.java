@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
-
+@ExtendWith(MockitoExtension.class)
 public class QuestCompletionServiceTest {
 
   @Mock
