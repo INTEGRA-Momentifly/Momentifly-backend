@@ -50,7 +50,9 @@ public class DataSeeder implements CommandLineRunner {
   // ---------- USERS ----------
 
   private void seedUsers() {
-    if (userRepository.count() > 0) return;
+    if (userRepository.count() > 0) {
+      return;
+    }
     userRepository.saveAll(List.of( // seeding hashed passwords by default
         // password is "test123" for every user
         newUser("Paul", "paul@gmail.com", "$2a$10$nIc6GDr6l23OnHxrCon0H.ujOiQWf5KEGcJqDqUp3SNiX0rjvxpJO", 2000.0),
@@ -74,7 +76,9 @@ public class DataSeeder implements CommandLineRunner {
 
   // ---------- QUESTS ----------
   private void seedQuests(Map<String, User> users) {
-    if (questRepository.count() > 0) return;
+    if (questRepository.count() > 0) {
+      return;
+    }
 
 
     User paul = users.get("Paul");
@@ -104,7 +108,9 @@ public class DataSeeder implements CommandLineRunner {
   // ---------- TASKS ----------
 
   private void seedTasks(Map<String, User> users) {
-    if (taskRepository.count() > 0) return;
+    if (taskRepository.count() > 0) {
+      return;
+    }
 
     // NEED AN ACTUAL USER AFTER FK IS IMPLEMENTED ON THE REMINDER MODEL
     UUID user = UUID.fromString("a1b2c3d4-0000-0000-0000-000000000001");
@@ -133,7 +139,9 @@ public class DataSeeder implements CommandLineRunner {
   // ---------- REMINDERS ----------
 
   private void seedReminders(Map<String, User> users) {
-    if (reminderRepository.count() > 0) return;
+    if (reminderRepository.count() > 0) {
+      return;
+    }
     // NEED AN ACTUAL USER AFTER FK IS IMPLEMENTED ON THE REMINDER MODEL
     UUID user = UUID.fromString("a1b2c3d4-0000-0000-0000-000000000001");
 
@@ -159,7 +167,9 @@ public class DataSeeder implements CommandLineRunner {
   // ---------- SUBSCRIPTIONS ----------
 
   private void seedSubscriptions(Map<String, User> users) {
-    if (subscriptionRepository.count() > 0) return;
+    if (subscriptionRepository.count() > 0) {
+      return;
+    }
     User paul = users.get("Paul");
 
     subscriptionRepository.saveAll(List.of(
