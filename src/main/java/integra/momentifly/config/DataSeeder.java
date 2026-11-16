@@ -1,7 +1,19 @@
 package integra.momentifly.config;
 
-import integra.momentifly.model.*;
-import integra.momentifly.repository.*;
+import integra.momentifly.model.Appointment;
+import integra.momentifly.model.Difficulty;
+import integra.momentifly.model.Quest;
+import integra.momentifly.model.RecurrenceEnum;
+import integra.momentifly.model.Reminder;
+import integra.momentifly.model.Subscription;
+import integra.momentifly.model.Task;
+import integra.momentifly.model.User;
+import integra.momentifly.repository.AppointmentRepository;
+import integra.momentifly.repository.QuestRepository;
+import integra.momentifly.repository.ReminderRepository;
+import integra.momentifly.repository.SubscriptionRepository;
+import integra.momentifly.repository.TaskRepository;
+import integra.momentifly.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -86,7 +98,7 @@ public class DataSeeder implements CommandLineRunner {
     // ---------- TASKS ----------
 
     private void seedTasks(List<User> users) {
-        if (taskRepository.count() > 0) return;
+        if (taskRepository.count() > 0) {return;}
 
         for (User user : users) {
             taskRepository.saveAll(List.of(
@@ -114,7 +126,7 @@ public class DataSeeder implements CommandLineRunner {
     // ---------- REMINDERS ----------
 
     private void seedReminders(List<User> users) {
-        if (reminderRepository.count() > 0) return;
+        if (reminderRepository.count() > 0) {return;}
 
         for (User user : users) {
             reminderRepository.saveAll(List.of(
@@ -139,7 +151,7 @@ public class DataSeeder implements CommandLineRunner {
     // ---------- SUBSCRIPTIONS ----------
 
     private void seedSubscriptions(List<User> users) {
-        if (subscriptionRepository.count() > 0) return;
+        if (subscriptionRepository.count() > 0) {return;}
 
         for (User user : users) {
             subscriptionRepository.saveAll(List.of(
@@ -163,7 +175,7 @@ public class DataSeeder implements CommandLineRunner {
     // ---------- APPOINTMENTS ----------
 
     private void seedAppointments(List<User> users) {
-        if (appointmentRepository.count() > 0) return;
+        if (appointmentRepository.count() > 0) {return;}
 
         for (User user : users) {
             appointmentRepository.saveAll(List.of(

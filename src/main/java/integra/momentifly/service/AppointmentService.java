@@ -4,12 +4,10 @@ import integra.momentifly.dto.AppointmentRequest;
 import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.Appointment;
 import integra.momentifly.repository.AppointmentRepository;
-import integra.momentifly.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service

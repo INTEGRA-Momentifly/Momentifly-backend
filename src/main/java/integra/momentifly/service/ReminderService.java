@@ -3,13 +3,11 @@ package integra.momentifly.service;
 import integra.momentifly.dto.ReminderRequest;
 import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.Reminder;
-import integra.momentifly.model.User;
 import integra.momentifly.repository.ReminderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service

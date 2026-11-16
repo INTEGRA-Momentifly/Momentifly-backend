@@ -3,8 +3,8 @@ package integra.momentifly.service;
 import integra.momentifly.dto.WriteTaskRequest;
 import integra.momentifly.exception.InvalidDataException;
 import integra.momentifly.exception.NotFoundException;
-import integra.momentifly.repository.TaskRepository;
 import integra.momentifly.model.Task;
+import integra.momentifly.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
