@@ -21,6 +21,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    public List<User> findAll(){ return userRepository.findAll();}
+
     public User updateUser(String username, UpdateUserRequest userRequest) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -39,12 +41,15 @@ public class UserService {
             throw new InvalidDataException("Email is already registered");
         }
 
+        if (userRepository.existsByEmail(userRequest.email())) {
+            throw new InvalidDataException("Email is already registered");
+        }
+
         var user = new User();
         user.setUsername(userRequest.username());
         user.setEmail(userRequest.email());
         user.setDailyCalorieGoal(userRequest.dailyCalorieGoal());
         user.setPassword(passwordEncoder.encode(userRequest.password())); // encode the password using bcrypt, and store it in the db after
-        user.setScore(0);
         return userRepository.save(user);
     }
 
