@@ -51,10 +51,11 @@ public class FriendshipController {
   }
 
   @PostMapping
-  public ResponseEntity<FriendshipResponse> addFriendship(Authentication authentication, @RequestParam UUID friendId) {
+  public ResponseEntity<FriendshipResponse> addFriendship(Authentication authentication, @RequestParam String friendName) {
 
     UUID userId = userService.getUserByUsername(authentication.getName()).getId();
-    if (userId.equals(friendId)) {
+    UUID friendId = userService.getUserByUsername(friendName).getId();
+    if (userId.equals(friendId) && friendId != null) {
       return ResponseEntity.badRequest().build();
     }
 

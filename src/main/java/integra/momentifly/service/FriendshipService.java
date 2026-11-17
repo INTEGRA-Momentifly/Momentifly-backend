@@ -1,13 +1,11 @@
 package integra.momentifly.service;
 
 import integra.momentifly.model.Friendship;
-import integra.momentifly.model.Reminder;
 import integra.momentifly.model.Status;
 import integra.momentifly.model.User;
 import integra.momentifly.repository.FriendshipRepository;
 import integra.momentifly.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,6 +19,7 @@ public class FriendshipService {
 
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public List<Friendship> getFriendsByStatus(UUID userId, Status status) {
         return friendshipRepository.findByUserIdAndStatusOrFriendIdAndStatus(
@@ -57,6 +56,8 @@ public class FriendshipService {
         if (userOpt.isEmpty() || friendOpt.isEmpty()) {
             return Optional.empty();
         }
+
+        emailService.sendFriendRequestEmail(friendOpt.get().getEmail(), userOpt.get().getUsername());
 
         Friendship friendship = new Friendship();
         friendship.setUser(userOpt.get());
