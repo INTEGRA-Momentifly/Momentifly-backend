@@ -34,6 +34,19 @@ public class FriendshipController {
   private final FriendshipMapper friendshipMapper;
   private final UserService userService;
 
+  @GetMapping("/requests")
+  public List<FriendshipResponse> getFriendshipRequests(Authentication authentication){
+    UUID userId = userService.getUserByUsername(authentication.getName()).getId();
+
+    List<Friendship> friends = new ArrayList<>();
+
+    friends = friendshipService.getFriendsByFriendIdAndStatus(userId, Status.PENDING);
+
+    return friends.stream()
+        .map(friendshipMapper::toDto)
+        .toList();
+  }
+
   @GetMapping()
   public List<FriendshipResponse> getFriendsByStatus(Authentication authentication, @RequestParam(required = false) Status status) {
 
