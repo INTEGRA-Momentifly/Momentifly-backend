@@ -38,7 +38,7 @@ public class EmailService {
                 senderUsername +
                 " would like to become your friend on Momentifly.\n\n" +
                 "Log in to Momentifly to accept or reject the request.\n\n" +
-                "http://localhost:3000\n\n" +
+                "http://localhost:4200\n\n" +
                 "Best regards,\nMomentifly Team"
         )
         .category("Friend Request")
