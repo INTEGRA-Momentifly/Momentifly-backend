@@ -1,56 +1,65 @@
 package integra.momentifly.integration;
 
+import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.Appointment;
+import integra.momentifly.model.User;
 import integra.momentifly.repository.AppointmentRepository;
+import integra.momentifly.repository.UserRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 
 public class AppointmentIntegrationTest extends BaseIntegrationTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-  @Autowired
-  private AppointmentRepository appointmentRepository;
+    @Autowired
+    private AppointmentRepository appointmentRepository;
 
-  @BeforeEach
-  void setUp() {
-    appointmentRepository.deleteAll();
+    @Autowired
+    private UserRepository userRepository;
 
-    Appointment appointment = new Appointment();
-    appointment.setUserId(UUID.randomUUID());
-    appointment.setDescription("Consult de integrare Testcontainers");
-    appointment.setStartDate(LocalDateTime.now().plusDays(1));
-    appointment.setEndDate(LocalDateTime.now().plusDays(1).plusHours(1));
+    @BeforeEach
+    void setUp() {
+        // works assuming the dataseeder does exist, and it creates the user with this username
+        User Paul = userRepository.findByUsername("Paul").orElseThrow(
+                () -> new NotFoundException("Paul not found"));
+        appointmentRepository.deleteAll();
 
-    appointmentRepository.save(appointment);
-  }
+        Appointment appointment = new Appointment();
+        appointment.setUser(Paul);
+        appointment.setDescription("Consult de integrare Testcontainers");
+        appointment.setStartDate(LocalDateTime.now().plusDays(1));
+        appointment.setEndDate(LocalDateTime.now().plusDays(1).plusHours(1));
 
-  @Test
-  void shouldReturnAppointmentsFromRealDatabase() throws Exception {
-    LocalDateTime now = LocalDateTime.now();
+        appointmentRepository.save(appointment);
+    }
 
-    mockMvc.perform(get("/api/appointments")
-            .param("startDate", now.toString())
-            .param("endDate", now.plusDays(2).toString())
-            .with(user("test").roles("USER")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.size()").value(1))
-        .andExpect(jsonPath("$[0].description").value("Consult de integrare Testcontainers"));  }
+    @Test
+    void shouldReturnAppointmentsFromRealDatabase() throws Exception {
+        mockMvc.perform(get("/api/appointments")
+                        .with(httpBasic("Paul", "test123")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
+                .andExpect(jsonPath("$[0].description")
+                        .value("Consult de integrare Testcontainers"));
+    }
 
-  @Test
-  void shouldReturn401WhenNotAuthenticated() throws Exception {
-    mockMvc.perform(get("/api/appointments"))
-        .andExpect(status().isUnauthorized());
-  }
+    @Test
+    void shouldReturn401WhenNotAuthenticated() throws Exception {
+        mockMvc.perform(get("/api/appointments"))
+                .andExpect(status().isUnauthorized());
+    }
 }
