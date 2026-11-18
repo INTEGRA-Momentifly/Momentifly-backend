@@ -38,4 +38,3 @@ out/
 
 ### Local Environment / Secrets ###
 .env
-src/main/resources/application-local.properties

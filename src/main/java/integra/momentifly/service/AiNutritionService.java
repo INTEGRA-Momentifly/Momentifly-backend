@@ -14,7 +14,7 @@ import tools.jackson.databind.ObjectMapper;
 public class AiNutritionService {
   private final RestTemplate restTemplate = new RestTemplate();
 
-  @Value("${ai.nutrition.response.key}")
+  @Value("${ai.nutrition.response.key:dummy-test-key}")
   private String apiKey;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
