@@ -122,27 +122,46 @@ public class QuestCompletionService {
     public int computeStreak(String username) {
         UUID userId = userService.getUserByUsername(username).getId();
 
-        List<LocalDate> completionDays = questCompletionRepository.findByUserId(userId).stream()
-                .filter(q -> q.getCompletionStatus() == QuestEnum.COMPLETE)
-                .map(QuestCompletion::getCompletionDate)
-                .filter(Objects::nonNull )
-                .map(LocalDateTime::toLocalDate)
-                .distinct()
-                .sorted(Comparator.reverseOrder())   // newest first
-                .toList();
+        List<LocalDate> completeDays = fullyCompletedDays(questCompletionRepository.findByUserId(userId));
 
-        return streakFrom(completionDays, LocalDate.now());
+        return streakFrom(completeDays);
+    }
+
+    // newest first: a day is fully completed when it has quests and none of them is still OPEN
+    static List<LocalDate> fullyCompletedDays(List<QuestCompletion> completions) {
+        Set<LocalDate> daysWithQuests = new HashSet<>();
+        Set<LocalDate> daysWithOpenQuests = new HashSet<>();
+
+        for (QuestCompletion completion : completions) {
+            LocalDate day = dayOf(completion);
+            if (day == null) continue;
+            daysWithQuests.add(day);
+            if (completion.getCompletionStatus() != QuestEnum.COMPLETE) daysWithOpenQuests.add(day);
+        }
+
+        return daysWithQuests.stream()
+                .filter(day -> !daysWithOpenQuests.contains(day))
+                .sorted(Comparator.reverseOrder())
+                .toList();
+    }
+
+    // the day a quest belongs to
+    private static LocalDate dayOf(QuestCompletion completion) {
+        return completion.getCompletionDate() == null ? null : completion.getCompletionDate().toLocalDate();
     }
 
     // completionDays: newest first
-    static int streakFrom(List<LocalDate> completionDays, LocalDate today) {
+    static int streakFrom(List<LocalDate> completionDays) {
+        LocalDate today = LocalDate.now();
+
         if (completionDays.isEmpty() || completionDays.getFirst().isBefore(today.minusDays(1)))
             return 0;   // no quests yet, or the last one was before yesterday
 
         int streak = 1;   // the newest day counts
         for (int i = 0; i < completionDays.size() - 1; ++i) {
-            if (ChronoUnit.DAYS.between(completionDays.get(i + 1), completionDays.get(i)) != 1) break;
-                ++streak;
+            if (ChronoUnit.DAYS.between(completionDays.get(i + 1), completionDays.get(i)) != 1)
+                break;
+            ++streak;
         }
         return streak;
     }
