@@ -35,6 +35,9 @@ public class Subscription {
     @Column(nullable = false)
     private String name;
 
+    @Column(name="auto_renewal", nullable = false)
+    private boolean autoRenewal;
+
     @Column(name="end_date")
     private LocalDateTime endDate;
 }
