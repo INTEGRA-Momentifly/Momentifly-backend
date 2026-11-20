@@ -5,6 +5,7 @@ import integra.momentifly.dto.UpdateSubscriptionRequest;
 import integra.momentifly.model.Subscription;
 import integra.momentifly.service.SubscriptionService;
 import integra.momentifly.model.User;
+import integra.momentifly.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,139 +35,183 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SubscriptionControllerTest {
-    @Mock
-    private SubscriptionService subscriptionService;
+  @Mock
+  private SubscriptionService subscriptionService;
 
-    @InjectMocks
-    private SubscriptionController subscriptionController;
+  @Mock
+  private UserService userService;
 
-    private UUID subscriptionId;
-    private UUID userId;
-    private Subscription sampleSubscription;
+  @Mock
+  private Authentication authentication;
 
-    @BeforeEach
-    void setUp(){
-        subscriptionId = UUID.randomUUID();
-        userId = UUID.randomUUID();
+  @InjectMocks
+  private SubscriptionController subscriptionController;
 
-        User sampleUser = new User();
-        sampleUser.setId(userId);
-        sampleUser.setUsername("Vlad");
-        sampleUser.setEmail("vlad@example.com");
+  private UUID subscriptionId;
+  private UUID userId;
+  private Subscription sampleSubscription;
 
-        sampleSubscription=new Subscription();
-        sampleSubscription.setId(subscriptionId);
-        sampleSubscription.setUser(sampleUser);
-        sampleSubscription.setName("spotify");
-        sampleSubscription.setCost(9.99);
-        sampleSubscription.setEndDate(LocalDateTime.now().plusMonths(1));
-    }
+  @BeforeEach
+  void setUp() {
+    subscriptionId = UUID.randomUUID();
+    userId = UUID.randomUUID();
 
-    @Test
-    @DisplayName("POST /api/subscriptions creates and returns new subscription")
-    void createSubscription_Success() {
-        CreateSubscriptionRequest request = new CreateSubscriptionRequest();
-        request.setUserId(userId);
-        request.setName("spotify");
-        request.setCost(9.99);
-        request.setEndDate(sampleSubscription.getEndDate());
+    User sampleUser = new User();
+    sampleUser.setId(userId);
+    sampleUser.setUsername("Vlad");
+    sampleUser.setEmail("vlad@example.com");
 
-        when(subscriptionService.createSubscription(any(CreateSubscriptionRequest.class)))
-                .thenReturn(sampleSubscription);
+    sampleSubscription = new Subscription();
+    sampleSubscription.setId(subscriptionId);
+    sampleSubscription.setUser(sampleUser);
+    sampleSubscription.setName("spotify");
+    sampleSubscription.setCost(9.99);
+    sampleSubscription.setEndDate(LocalDateTime.now().plusMonths(1));
+  }
 
-        Subscription result = subscriptionController.createSubscription(request);
+  @Test
+  @DisplayName("POST /api/subscriptions creates and returns new subscription")
+  void createSubscription_Success() {
+    CreateSubscriptionRequest request = new CreateSubscriptionRequest();
+    request.setUserId(userId);
+    request.setName("spotify");
+    request.setCost(9.99);
+    request.setEndDate(sampleSubscription.getEndDate());
 
-        assertNotNull(result);
-        assertEquals("spotify", result.getName());
-        assertEquals(9.99, result.getCost());
+    when(subscriptionService.createSubscription(any(CreateSubscriptionRequest.class)))
+        .thenReturn(sampleSubscription);
 
-        verify(subscriptionService, times(1)).createSubscription(any(CreateSubscriptionRequest.class));
-    }
+    Subscription result = subscriptionController.createSubscription(request);
 
-    @Test
-    @DisplayName("PUT /api/subscriptions/{id} updates and returns updated subscription")
-    void updateSubscription_Success() {
-        UUID subscriptionId = UUID.randomUUID();
+    assertNotNull(result);
+    assertEquals("spotify", result.getName());
+    assertEquals(9.99, result.getCost());
 
-        UpdateSubscriptionRequest updateRequest = new UpdateSubscriptionRequest();
-        updateRequest.setName("spotify-premium");
-        updateRequest.setCost(12.99);
+    verify(subscriptionService, times(1)).createSubscription(any(CreateSubscriptionRequest.class));
+  }
 
-        when(subscriptionService.updateSubscription(eq(subscriptionId), any(UpdateSubscriptionRequest.class)))
-                .thenReturn(sampleSubscription);
+  @Test
+  @DisplayName("PUT /api/subscriptions/{id} updates and returns updated subscription")
+  void updateSubscription_Success() {
+    UUID subscriptionId = UUID.randomUUID();
 
-        Subscription result = subscriptionController.updateSubscription(subscriptionId, updateRequest);
+    UpdateSubscriptionRequest updateRequest = new UpdateSubscriptionRequest();
+    updateRequest.setName("spotify-premium");
+    updateRequest.setCost(12.99);
 
-        assertNotNull(result);
-        verify(subscriptionService, times(1)).updateSubscription(eq(subscriptionId), any(UpdateSubscriptionRequest.class));
-    }
+    when(subscriptionService.updateSubscription(eq(subscriptionId), any(UpdateSubscriptionRequest.class)))
+        .thenReturn(sampleSubscription);
 
-    @Test
-    @DisplayName("DELETE subscription returns 204 No Content")
-    void deleteSubscription_Success() {
-        doNothing().when(subscriptionService).deleteSubscription(subscriptionId);
+    Subscription result = subscriptionController.updateSubscription(subscriptionId, updateRequest);
 
-        ResponseEntity<Void> response = subscriptionController.deleteSubscription(subscriptionId);
+    assertNotNull(result);
+    verify(subscriptionService, times(1)).updateSubscription(eq(subscriptionId), any(UpdateSubscriptionRequest.class));
+  }
 
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-        verify(subscriptionService, times(1)).deleteSubscription(subscriptionId);
-    }
+  @Test
+  @DisplayName("DELETE subscription returns 204 No Content")
+  void deleteSubscription_Success() {
+    doNothing().when(subscriptionService).deleteSubscription(subscriptionId);
 
+    ResponseEntity<Void> response = subscriptionController.deleteSubscription(subscriptionId);
 
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    verify(subscriptionService, times(1)).deleteSubscription(subscriptionId);
+  }
 
-    @Test
-    @DisplayName("GET subscription by ID returns 200 OK with Subscription body when found")
-    void getSubscriptionByIdSuccess() {
-        //Arrange
-        when(subscriptionService.findSubscriptionById(subscriptionId))
-                .thenReturn(Optional.of(sampleSubscription));
+  @Test
+  @DisplayName("GET subscription by ID returns 200 OK with Subscription body when found")
+  void getSubscriptionByIdSuccess() {
+    //Arrange
+    when(subscriptionService.findSubscriptionById(subscriptionId))
+        .thenReturn(Optional.of(sampleSubscription));
 
-        //Act
-        ResponseEntity<Subscription> response = subscriptionController.getSubscriptionById(subscriptionId);
+    //Act
+    ResponseEntity<Subscription> response = subscriptionController.getSubscriptionById(subscriptionId);
 
-        //Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("spotify", response.getBody().getName());
-        assertEquals(9.99, response.getBody().getCost());
-        assertEquals(userId, response.getBody().getUser().getId());
-    }
+    //Assert
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals("spotify", response.getBody().getName());
+    assertEquals(9.99, response.getBody().getCost());
+    assertEquals(userId, response.getBody().getUser().getId());
+  }
 
-    @Test
-    @DisplayName("GET subscription by ID returns 404 Not Found when missing")
-    void getSubscriptionById_NotFound(){
-        when(subscriptionService.findSubscriptionById(subscriptionId))
-                .thenReturn(Optional.empty());
+  @Test
+  @DisplayName("GET subscription by ID returns 404 Not Found when missing")
+  void getSubscriptionById_NotFound() {
+    when(subscriptionService.findSubscriptionById(subscriptionId))
+        .thenReturn(Optional.empty());
 
-        ResponseEntity<Subscription> response = subscriptionController.getSubscriptionById(subscriptionId);
+    ResponseEntity<Subscription> response = subscriptionController.getSubscriptionById(subscriptionId);
 
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
-    }
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertNull(response.getBody());
+  }
 
-    @Test
-    @DisplayName("GET /api/subscriptions without query param returns all subscriptions")
-    void getAllSubscriptions_WithoutUserId_ReturnsAll() {
-        when(subscriptionService.getAllSubscriptions()).thenReturn(List.of(sampleSubscription));
+  @Test
+  @DisplayName("GET /api/subscriptions returns subscriptions for authenticated user")
+  void getAllSubscriptions_forAuthenticatedUser_ReturnsUserSubscriptions() {
+    User user = new User();
+    user.setId(userId);
+    user.setUsername("Vlad");
 
-        List<Subscription> result = subscriptionController.getAllSubscriptions(null);
+    when(authentication.getName()).thenReturn("Vlad");
+    when(userService.getUserByUsername("Vlad")).thenReturn(user);
+    when(subscriptionService.getSubscriptionsByUserId(userId))
+        .thenReturn(List.of(sampleSubscription));
 
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(subscriptionService, times(1)).getAllSubscriptions();
-        verify(subscriptionService, never()).getSubscriptionsByUserId(any());
-    }
+    List<Subscription> result = subscriptionController.getAllSubscriptions(authentication);
 
-    @Test
-    @DisplayName("GET /api/subscriptions?userId=... returns filtered subscriptions for user")
-    void getAllSubscriptions_WithUserId_ReturnsFiltered() {
-        when(subscriptionService.getSubscriptionsByUserId(userId)).thenReturn(List.of(sampleSubscription));
+    assertNotNull(result);
+    assertEquals(1, result.size());
+    verify(userService, times(1)).getUserByUsername("Vlad");
+    verify(subscriptionService, times(1)).getSubscriptionsByUserId(userId);
+    verify(subscriptionService, never()).getAllSubscriptions();
+  }
 
-        List<Subscription> result = subscriptionController.getAllSubscriptions(userId);
+  @Test
+  @DisplayName("GET /api/subscriptions/active returns active subscriptions for authenticated user")
+  void getAllActiveSubscriptions_Success() {
+    User user = new User();
+    user.setId(userId);
+    user.setUsername("Vlad");
 
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(subscriptionService, times(1)).getSubscriptionsByUserId(userId);
-        verify(subscriptionService, never()).getAllSubscriptions();
-    }
+    when(authentication.getName()).thenReturn("Vlad");
+    when(userService.getUserByUsername("Vlad")).thenReturn(user);
+    when(subscriptionService.getAllActiveSubscriptions(userId))
+        .thenReturn(List.of(sampleSubscription));
+
+    List<Subscription> result = subscriptionController.getAllActiveSubscriptions(authentication);
+
+    assertEquals(1, result.size());
+    verify(subscriptionService).getAllActiveSubscriptions(userId);
+  }
+
+  @Test
+  @DisplayName("GET /api/subscriptions/expired returns expired subscriptions for authenticated user")
+  void getAllExpiredSubscriptions_Success() {
+    User user = new User();
+    user.setId(userId);
+    user.setUsername("Vlad");
+
+    Subscription expiredSubscription = new Subscription();
+    expiredSubscription.setId(UUID.randomUUID());
+    expiredSubscription.setUser(user);
+    expiredSubscription.setName("old-sub");
+    expiredSubscription.setCost(5.0);
+    expiredSubscription.setEndDate(LocalDateTime.now().minusDays(5));
+
+    when(authentication.getName()).thenReturn("Vlad");
+    when(userService.getUserByUsername("Vlad")).thenReturn(user);
+    when(subscriptionService.getAllExpiredSubscriptions(userId))
+        .thenReturn(List.of(expiredSubscription));
+
+    List<Subscription> result = subscriptionController.getAllExpiredSubscriptions(authentication);
+
+    assertEquals(1, result.size());
+    assertEquals("old-sub", result.getFirst().getName());
+    verify(userService, times(1)).getUserByUsername("Vlad");
+    verify(subscriptionService, times(1)).getAllExpiredSubscriptions(userId);
+  }
 }
