@@ -4,11 +4,14 @@ import integra.momentifly.dto.CreateSubscriptionRequest;
 import integra.momentifly.dto.UpdateSubscriptionRequest;
 import integra.momentifly.model.Subscription;
 import integra.momentifly.service.SubscriptionService;
+import integra.momentifly.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,40 +25,62 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/subscriptions")
+@RequestMapping("/api/subscriptions")
 public class SubscriptionController {
 
-    private final SubscriptionService subscriptionService;
+  private final SubscriptionService subscriptionService;
+  private final UserService userService;
 
-    @PostMapping
-    public Subscription createSubscription(@Valid @RequestBody CreateSubscriptionRequest createSubscriptionRequest){
-        return subscriptionService.createSubscription(createSubscriptionRequest);
-    }
+  @PostMapping
+  public Subscription createSubscription(@Valid @RequestBody CreateSubscriptionRequest createSubscriptionRequest) {
+    return subscriptionService.createSubscription(createSubscriptionRequest);
+  }
 
-    @PutMapping("/{id}")
-    public Subscription updateSubscription(@PathVariable UUID id, @Valid @RequestBody UpdateSubscriptionRequest updateSubscriptionRequest){
-        return subscriptionService.updateSubscription(id, updateSubscriptionRequest);
-    }
+  @PutMapping("/{id}")
+  public Subscription updateSubscription(@PathVariable UUID id, @Valid @RequestBody UpdateSubscriptionRequest updateSubscriptionRequest) {
+    return subscriptionService.updateSubscription(id, updateSubscriptionRequest);
+  }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Subscription> getSubscriptionById(@PathVariable UUID id){
-        return subscriptionService.findSubscriptionById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+  @GetMapping("/{id}")
+  public ResponseEntity<Subscription> getSubscriptionById(@PathVariable UUID id) {
+    return subscriptionService.findSubscriptionById(id)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
+  }
 
-    @GetMapping
-    public List<Subscription> getAllSubscriptions(@RequestParam(required = false) UUID userId){
-        if(userId != null){
-            return subscriptionService.getSubscriptionsByUserId(userId);
-        }
-        return subscriptionService.getAllSubscriptions();
-    }
+  @GetMapping
+  public List<Subscription> getAllSubscriptions(Authentication authentication) {
+    UUID userId = userService.getUserByUsername(authentication.getName()).getId();
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSubscription(@PathVariable UUID id){
-        subscriptionService.deleteSubscription(id);
-        return ResponseEntity.noContent().build();
-    }
+    return subscriptionService.getSubscriptionsByUserId(userId);
+  }
+
+  @GetMapping("/active")
+  public List<Subscription> getAllActiveSubscriptions(Authentication authentication) {
+    UUID userId = userService.getUserByUsername(authentication.getName()).getId();
+
+    return subscriptionService.getAllActiveSubscriptions(userId);
+  }
+
+  @GetMapping("/expired")
+  public List<Subscription> getAllExpiredSubscriptions(Authentication authentication) {
+    UUID userId = userService.getUserByUsername(authentication.getName()).getId();
+
+    return subscriptionService.getAllExpiredSubscriptions(userId);
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteSubscription(@PathVariable UUID id) {
+    subscriptionService.deleteSubscription(id);
+
+    return ResponseEntity.noContent().build();
+  }
+
+  @PatchMapping("/{id}/autoRenewal")
+  public Subscription updateAutoRenewal(
+      @PathVariable UUID id,
+      @RequestParam boolean autoRenewal) {
+    return subscriptionService.updateAutoRenewal(id, autoRenewal);
+  }
 
 }
