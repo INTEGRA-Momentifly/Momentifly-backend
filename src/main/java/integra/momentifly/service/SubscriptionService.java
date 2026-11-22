@@ -59,6 +59,10 @@ public class SubscriptionService {
     return subscriptionRepository.findById(id);
   }
 
+  public List<Subscription> getAllSubscriptions() {
+    return subscriptionRepository.findAll();
+  }
+
   public List<Subscription> getActiveSubscriptionsByUserId(UUID userId) {
     return refreshSubscriptionsForUser(userId).stream()
         .filter(sub -> sub.getEndDate().isAfter(LocalDateTime.now()))

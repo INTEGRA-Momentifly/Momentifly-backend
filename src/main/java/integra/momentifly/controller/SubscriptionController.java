@@ -32,20 +32,20 @@ public class SubscriptionController {
   private final UserService userService;
 
   @PostMapping
-  public Subscription createSubscription(Authentication authentication,
-                                           @Valid @RequestBody CreateSubscriptionRequest createSubscriptionRequest) {
-    return subscriptionService.createSubscription(authentication.getName(), createSubscriptionRequest);
+  public Subscription createSubscription(@Valid @RequestBody CreateSubscriptionRequest createSubscriptionRequest) {
+    return subscriptionService.createSubscription(createSubscriptionRequest);
   }
 
   @PutMapping("/{id}")
-  public Subscription updateSubscription(Authentication authentication, @PathVariable UUID id,
-                                           @Valid @RequestBody UpdateSubscriptionRequest updateSubscriptionRequest) {
-    return subscriptionService.updateSubscription(id, authentication.getName(), updateSubscriptionRequest);
+  public Subscription updateSubscription(@PathVariable UUID id, @Valid @RequestBody UpdateSubscriptionRequest updateSubscriptionRequest) {
+    return subscriptionService.updateSubscription(id, updateSubscriptionRequest);
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Subscription> getSubscriptionById(Authentication authentication,@PathVariable UUID id) {
-    return ResponseEntity.ok(subscriptionService.findSubscriptionById(id, authentication.getName()));
+  public ResponseEntity<Subscription> getSubscriptionById(@PathVariable UUID id) {
+    return subscriptionService.findSubscriptionById(id)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
   }
 
   @GetMapping
@@ -70,8 +70,8 @@ public class SubscriptionController {
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteSubscription(Authentication authentication,@PathVariable UUID id) {
-    subscriptionService.deleteSubscription(id, authentication.getName());
+  public ResponseEntity<Void> deleteSubscription(@PathVariable UUID id) {
+    subscriptionService.deleteSubscription(id);
 
     return ResponseEntity.noContent().build();
   }

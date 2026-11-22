@@ -2,11 +2,10 @@ package integra.momentifly.controller;
 
 import integra.momentifly.dto.CreateSubscriptionRequest;
 import integra.momentifly.dto.UpdateSubscriptionRequest;
-import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.Subscription;
+import integra.momentifly.service.SubscriptionService;
 import integra.momentifly.model.User;
 import integra.momentifly.service.UserService;
-import integra.momentifly.service.SubscriptionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,12 +19,12 @@ import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.eq;
@@ -68,27 +67,27 @@ class SubscriptionControllerTest {
     sampleSubscription.setName("spotify");
     sampleSubscription.setCost(9.99);
     sampleSubscription.setEndDate(LocalDateTime.now().plusMonths(1));
-    }
+  }
 
   @Test
   @DisplayName("POST /api/subscriptions creates and returns new subscription")
   void createSubscription_Success() {
     CreateSubscriptionRequest request = new CreateSubscriptionRequest();
-
+    request.setUserId(userId);
     request.setName("spotify");
     request.setCost(9.99);
     request.setEndDate(sampleSubscription.getEndDate());
 
-    when(subscriptionService.createSubscription(eq("Vlad"), any(CreateSubscriptionRequest.class)))
+    when(subscriptionService.createSubscription(any(CreateSubscriptionRequest.class)))
         .thenReturn(sampleSubscription);
 
-    Subscription result = subscriptionController.createSubscription(authentication, request);
+    Subscription result = subscriptionController.createSubscription(request);
 
     assertNotNull(result);
     assertEquals("spotify", result.getName());
     assertEquals(9.99, result.getCost());
 
-    verify(subscriptionService, times(1)).createSubscription(eq("Vlad"), any(CreateSubscriptionRequest.class));
+    verify(subscriptionService, times(1)).createSubscription(any(CreateSubscriptionRequest.class));
   }
 
   @Test
@@ -100,33 +99,35 @@ class SubscriptionControllerTest {
     updateRequest.setName("spotify-premium");
     updateRequest.setCost(12.99);
 
-    when(subscriptionService.updateSubscription(eq(subscriptionId), eq("Vlad"), any(UpdateSubscriptionRequest.class)))
+    when(subscriptionService.updateSubscription(eq(subscriptionId), any(UpdateSubscriptionRequest.class)))
         .thenReturn(sampleSubscription);
 
-    Subscription result = subscriptionController.updateSubscription(authentication, subscriptionId, updateRequest);
+    Subscription result = subscriptionController.updateSubscription(subscriptionId, updateRequest);
 
     assertNotNull(result);
-    verify(subscriptionService, times(1)).updateSubscription(eq(subscriptionId), eq("Vlad"), any(UpdateSubscriptionRequest.class));
+    verify(subscriptionService, times(1)).updateSubscription(eq(subscriptionId), any(UpdateSubscriptionRequest.class));
   }
 
   @Test
   @DisplayName("DELETE subscription returns 204 No Content")
   void deleteSubscription_Success() {
-    doNothing().when(subscriptionService).deleteSubscription(subscriptionId, "Vlad");
+    doNothing().when(subscriptionService).deleteSubscription(subscriptionId);
 
-    ResponseEntity<Void> response = subscriptionController.deleteSubscription(authentication, subscriptionId);
+    ResponseEntity<Void> response = subscriptionController.deleteSubscription(subscriptionId);
 
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    verify(subscriptionService, times(1)).deleteSubscription(subscriptionId, "Vlad");
+    verify(subscriptionService, times(1)).deleteSubscription(subscriptionId);
   }
 
   @Test
   @DisplayName("GET subscription by ID returns 200 OK with Subscription body when found")
   void getSubscriptionByIdSuccess() {
-    when(subscriptionService.findSubscriptionById(subscriptionId, "Vlad"))
-        .thenReturn(sampleSubscription);
+    //Arrange
+    when(subscriptionService.findSubscriptionById(subscriptionId))
+        .thenReturn(Optional.of(sampleSubscription));
 
-    ResponseEntity<Subscription> response = subscriptionController.getSubscriptionById(authentication, subscriptionId);
+    //Act
+    ResponseEntity<Subscription> response = subscriptionController.getSubscriptionById(subscriptionId);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
@@ -136,10 +137,10 @@ class SubscriptionControllerTest {
   }
 
   @Test
-  @DisplayName("GET subscription by ID throws NotFoundException when missing or not owned")
+  @DisplayName("GET subscription by ID returns 404 Not Found when missing")
   void getSubscriptionById_NotFound() {
-    when(subscriptionService.findSubscriptionById(subscriptionId, "Vlad"))
-        .thenThrow(new NotFoundException("Subscription not found"));
+    when(subscriptionService.findSubscriptionById(subscriptionId))
+        .thenReturn(Optional.empty());
 
     ResponseEntity<Subscription> response = subscriptionController.getSubscriptionById(subscriptionId);
 
