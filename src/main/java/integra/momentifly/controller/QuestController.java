@@ -5,6 +5,7 @@ import integra.momentifly.dto.CreateQuestRequest;
 import integra.momentifly.dto.UpdateQuestRequest;
 import integra.momentifly.model.Quest;
 import integra.momentifly.service.QuestService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,7 +28,7 @@ public class QuestController {
     private final QuestService questService;
 
     @PostMapping
-    public ResponseEntity<Quest> createQuest(@RequestBody CreateQuestRequest quest) {
+    public ResponseEntity<Quest> createQuest(@Valid @RequestBody CreateQuestRequest quest) {
         return ResponseEntity.ok(questService.createQuest(quest));
     }
 
