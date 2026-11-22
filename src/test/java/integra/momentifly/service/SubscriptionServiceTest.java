@@ -2,15 +2,18 @@ package integra.momentifly.service;
 
 import integra.momentifly.dto.CreateSubscriptionRequest;
 import integra.momentifly.dto.UpdateSubscriptionRequest;
-import integra.momentifly.service.SubscriptionService;
 import integra.momentifly.model.Subscription;
+import integra.momentifly.model.User;
 import integra.momentifly.repository.SubscriptionRepository;
+import integra.momentifly.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,133 +30,197 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
-    @Mock
-    private SubscriptionRepository subscriptionRepository;
+  @Mock
+  private SubscriptionRepository subscriptionRepository;
 
-    @InjectMocks
-    private SubscriptionService subscriptionService;
+  @Mock
+  private UserRepository userRepository;
 
-    @Test
-    void createSubscription_Success() {
-        CreateSubscriptionRequest request = new CreateSubscriptionRequest();
-        request.setUserId(UUID.randomUUID());
-        request.setName("Spotify");
-        request.setCost(9.99);
+  @InjectMocks
+  private SubscriptionService subscriptionService;
 
-        Subscription savedSubscription = new Subscription();
-        savedSubscription.setId(UUID.randomUUID());
-        savedSubscription.setName("Spotify");
-        savedSubscription.setCost(9.99);
+  @Test
+  void createSubscription_Success() {
+    CreateSubscriptionRequest request = new CreateSubscriptionRequest();
+    request.setUserId(UUID.randomUUID());
+    request.setName("Spotify");
+    request.setCost(9.99);
 
-        when(subscriptionRepository.save(any(Subscription.class))).thenReturn(savedSubscription);
+    Subscription savedSubscription = new Subscription();
+    savedSubscription.setId(UUID.randomUUID());
+    savedSubscription.setName("Spotify");
+    savedSubscription.setCost(9.99);
 
-        Subscription result = subscriptionService.createSubscription(request);
+    UUID userId = UUID.randomUUID();
+    request.setUserId(userId);
 
-        assertNotNull(result);
-        assertNotNull(result.getId());
-        assertEquals("Spotify", result.getName());
-        assertEquals(9.99, result.getCost());
-        verify(subscriptionRepository).save(any(Subscription.class));
-    }
+    User user = new User();
+    user.setId(userId);
 
-    @Test
-    void updateSubscription_WhenExists_UpdatesFieldsAndSaves() {
-        UUID id = UUID.randomUUID();
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(subscriptionRepository.save(any(Subscription.class))).thenReturn(savedSubscription);
 
-        Subscription existingSubscription = new Subscription();
-        existingSubscription.setId(id);
-        existingSubscription.setName("Old Name");
-        existingSubscription.setCost(9.99);
+    Subscription result = subscriptionService.createSubscription(request);
 
-        UpdateSubscriptionRequest updateSubscriptionRequest = new UpdateSubscriptionRequest();
-        updateSubscriptionRequest.setName("New Name");
-        updateSubscriptionRequest.setCost(12.99);
+    assertNotNull(result);
+    assertNotNull(result.getId());
+    assertEquals("Spotify", result.getName());
+    assertEquals(9.99, result.getCost());
+    verify(subscriptionRepository).save(any(Subscription.class));
+  }
 
-        when(subscriptionRepository.findById(id)).thenReturn(Optional.of(existingSubscription));
-        when(subscriptionRepository.save(existingSubscription)).thenReturn(existingSubscription);
+  @Test
+  void updateSubscription_WhenExists_UpdatesFieldsAndSaves() {
+    UUID id = UUID.randomUUID();
 
-        Subscription result = subscriptionService.updateSubscription(id, updateSubscriptionRequest);
+    Subscription existingSubscription = new Subscription();
+    existingSubscription.setId(id);
+    existingSubscription.setName("Old Name");
+    existingSubscription.setCost(9.99);
 
-        assertNotNull(result);
-        assertEquals("New Name", result.getName());
-        assertEquals(12.99, result.getCost());
-        verify(subscriptionRepository).findById(id);
-        verify(subscriptionRepository).save(existingSubscription);
-    }
+    UpdateSubscriptionRequest updateSubscriptionRequest = new UpdateSubscriptionRequest();
+    updateSubscriptionRequest.setName("New Name");
+    updateSubscriptionRequest.setCost(12.99);
 
-    @Test
-    void updateSubscription_WhenNotFound_ThrowsException() {
-        UUID id = UUID.randomUUID();
-        UpdateSubscriptionRequest updateSubscriptionRequest = new UpdateSubscriptionRequest();
-        updateSubscriptionRequest.setName("New Name");
+    when(subscriptionRepository.findById(id)).thenReturn(Optional.of(existingSubscription));
+    when(subscriptionRepository.save(existingSubscription)).thenReturn(existingSubscription);
 
-        when(subscriptionRepository.findById(id)).thenReturn(Optional.empty());
+    Subscription result = subscriptionService.updateSubscription(id, updateSubscriptionRequest);
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> subscriptionService.updateSubscription(id, updateSubscriptionRequest)
-        );
+    assertNotNull(result);
+    assertEquals("New Name", result.getName());
+    assertEquals(12.99, result.getCost());
+    verify(subscriptionRepository).findById(id);
+    verify(subscriptionRepository).save(existingSubscription);
+  }
 
-        assertTrue(exception.getMessage().contains("Subscription not found"));
-        verify(subscriptionRepository, never()).save(any());
-    }
+  @Test
+  void updateSubscription_WhenNotFound_ThrowsException() {
+    UUID id = UUID.randomUUID();
+    UpdateSubscriptionRequest updateSubscriptionRequest = new UpdateSubscriptionRequest();
+    updateSubscriptionRequest.setName("New Name");
 
-    @Test
-    void deleteSubscription_Success() {
-        UUID id = UUID.randomUUID();
-        doNothing().when(subscriptionRepository).deleteById(id);
+    when(subscriptionRepository.findById(id)).thenReturn(Optional.empty());
 
-        subscriptionService.deleteSubscription(id);
+    RuntimeException exception = assertThrows(
+        RuntimeException.class,
+        () -> subscriptionService.updateSubscription(id, updateSubscriptionRequest)
+    );
 
-        verify(subscriptionRepository, times(1)).deleteById(id);
-    }
+    assertTrue(exception.getMessage().contains("Subscription not found"));
+    verify(subscriptionRepository, never()).save(any());
+  }
 
-    @Test
-    void findSubscriptionById_WhenFound_ReturnsSubscription() {
-        UUID id = UUID.randomUUID();
-        Subscription subscription = new Subscription();
-        subscription.setId(id);
+  @Test
+  void deleteSubscription_Success() {
+    UUID id = UUID.randomUUID();
+    doNothing().when(subscriptionRepository).deleteById(id);
 
-        when(subscriptionRepository.findById(id)).thenReturn(Optional.of(subscription));
+    subscriptionService.deleteSubscription(id);
 
-        Optional<Subscription> result = subscriptionService.findSubscriptionById(id);
+    verify(subscriptionRepository, times(1)).deleteById(id);
+  }
 
-        assertTrue(result.isPresent());
-        assertEquals(id, result.get().getId());
-        verify(subscriptionRepository).findById(id);
-    }
+  @Test
+  void getAllActiveSubscriptions_ReturnsOnlyFutureEndDatesForUser() {
+    UUID userId = UUID.randomUUID();
+    LocalDateTime now = LocalDateTime.now();
 
-    @Test
-    void findSubscriptionById_WhenNotFound_ReturnsEmptyOptional() {
-        UUID id = UUID.randomUUID();
-        when(subscriptionRepository.findById(id)).thenReturn(Optional.empty());
+    Subscription active = new Subscription();
+    active.setEndDate(now.plusDays(10));
 
-        Optional<Subscription> result = subscriptionService.findSubscriptionById(id);
+    Subscription expired = new Subscription();
+    expired.setEndDate(now.minusDays(2));
 
-        assertTrue(result.isEmpty());
-        verify(subscriptionRepository).findById(id);
-    }
+    when(subscriptionRepository.findByUserId(userId)).thenReturn(List.of(active, expired));
 
-    @Test
-    void getAllSubscriptions_Success() {
-        Subscription subscription = new Subscription();
-        when(subscriptionRepository.findAll()).thenReturn(java.util.List.of(subscription));
+    List<Subscription> result = subscriptionService.getActiveSubscriptionsByUserId(userId);
 
-        java.util.List<Subscription> result = subscriptionService.getAllSubscriptions();
+    assertEquals(1, result.size());
+    assertEquals(active, result.get(0));
+  }
 
-        assertEquals(1, result.size());
-        verify(subscriptionRepository).findAll();
-    }
+  @Test
+  void getAllExpiredSubscriptions_ReturnsOnlyPastEndDatesForUser() {
+    UUID userId = UUID.randomUUID();
+    LocalDateTime now = LocalDateTime.now();
 
-    @Test
-    void getSubscriptionsByUserId_Success() {
-        UUID userId = UUID.randomUUID();
-        Subscription subscription = new Subscription();
-        when(subscriptionRepository.findByUserId(userId)).thenReturn(java.util.List.of(subscription));
+    Subscription active = new Subscription();
+    active.setEndDate(now.plusDays(10));
 
-        java.util.List<Subscription> result = subscriptionService.getSubscriptionsByUserId(userId);
+    Subscription expired = new Subscription();
+    expired.setEndDate(now.minusDays(2));
 
-        assertEquals(1, result.size());
-        verify(subscriptionRepository).findByUserId(userId);
-    }
+    when(subscriptionRepository.findByUserId(userId)).thenReturn(List.of(active, expired));
+
+    List<Subscription> result = subscriptionService.getExpiredSubscriptionsByUserId(userId);
+
+    assertEquals(1, result.size());
+    assertEquals(expired, result.getFirst());
+  }
+
+  @Test
+  void getSubscriptionById_WhenFound_ReturnsSubscription() {
+    UUID id = UUID.randomUUID();
+    Subscription subscription = new Subscription();
+    subscription.setId(id);
+
+    when(subscriptionRepository.findById(id)).thenReturn(Optional.of(subscription));
+
+    Optional<Subscription> result = subscriptionService.findSubscriptionById(id);
+
+    assertTrue(result.isPresent());
+    assertEquals(id, result.get().getId());
+    verify(subscriptionRepository).findById(id);
+  }
+
+  @Test
+  void getSubscriptionById_WhenNotFound_ReturnsEmptyOptional() {
+    UUID id = UUID.randomUUID();
+    when(subscriptionRepository.findById(id)).thenReturn(Optional.empty());
+
+    Optional<Subscription> result = subscriptionService.findSubscriptionById(id);
+
+    assertTrue(result.isEmpty());
+    verify(subscriptionRepository).findById(id);
+  }
+
+  @Test
+  void getAllSubscriptions_Success() {
+    Subscription subscription = new Subscription();
+    when(subscriptionRepository.findAll()).thenReturn(java.util.List.of(subscription));
+
+    java.util.List<Subscription> result = subscriptionService.getAllSubscriptions();
+
+    assertEquals(1, result.size());
+    verify(subscriptionRepository).findAll();
+  }
+
+  @Test
+  void getSubscriptionsByUserId_Success() {
+    UUID userId = UUID.randomUUID();
+    Subscription subscription = new Subscription();
+    when(subscriptionRepository.findByUserId(userId)).thenReturn(java.util.List.of(subscription));
+
+    java.util.List<Subscription> result = subscriptionService.getSubscriptionsByUserId(userId);
+
+    assertEquals(1, result.size());
+    verify(subscriptionRepository).findByUserId(userId);
+  }
+
+  @Test
+  void updateAutoRenewal_WhenExists_UpdatedFlagAndSets(){
+    UUID id = UUID.randomUUID();
+    Subscription existing = new Subscription();
+    existing.setId(id);
+    existing.setAutoRenewal(false);
+
+    when(subscriptionRepository.findById(id)).thenReturn(Optional.of(existing));
+    when(subscriptionRepository.save(existing)).thenReturn(existing);
+
+    Subscription result = subscriptionService.updateAutoRenewal(id, true);
+
+    assertTrue(result.isAutoRenewal());
+    verify(subscriptionRepository).save(existing);
+  }
 }
