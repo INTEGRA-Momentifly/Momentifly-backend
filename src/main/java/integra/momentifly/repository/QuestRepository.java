@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface QuestRepository extends JpaRepository<Quest, UUID> {
     List<Quest> findByChallengeIsNull();
+    List<Quest> findByChallengeId(UUID challengeId);
 }
