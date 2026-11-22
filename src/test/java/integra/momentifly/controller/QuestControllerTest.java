@@ -33,9 +33,9 @@ class QuestControllerTest {
     @Test
     void createQuest_ShouldReturn200AndQuest() {
 
-        CreateQuestRequest request = new CreateQuestRequest("Task", 15.0);
+        CreateQuestRequest request = new CreateQuestRequest("Task", 15.0, null);
 
-        Quest savedQuest = new Quest(UUID.randomUUID(), "Task", 15.0);
+        Quest savedQuest = new Quest(UUID.randomUUID(), "Task", 15.0, null);
         when(questService.createQuest(any(CreateQuestRequest.class))).thenReturn(savedQuest);
 
         ResponseEntity<Quest> response = questController.createQuest(request);
@@ -46,8 +46,8 @@ class QuestControllerTest {
 
     @Test
     void getAllQuests_ShouldReturn200AndList() {
-        Quest quest = new Quest(UUID.randomUUID(), "Task", 15.0);
-        when(questService.getAllQuests()).thenReturn(List.of(quest));
+        Quest quest = new Quest(UUID.randomUUID(), "Task", 15.0, null);
+        when(questService.getQuestsWithoutChallenge()).thenReturn(List.of(quest));
 
         ResponseEntity<List<Quest>> response = questController.getAllQuests();
 
@@ -58,7 +58,7 @@ class QuestControllerTest {
     @Test
     void getQuestById_ShouldReturn200_WhenExists() {
         UUID id = UUID.randomUUID();
-        Quest quest = new Quest(id, "Task", 15.0);
+        Quest quest = new Quest(id, "Task", 15.0, null);
         when(questService.getQuestById(id)).thenReturn(Optional.of(quest));
 
         ResponseEntity<Quest> response = questController.getQuestById(id);
@@ -80,9 +80,9 @@ class QuestControllerTest {
     @Test
     void updateQuest_ShouldReturn200_WhenUpdated() {
         UUID id = UUID.randomUUID();
-        UpdateQuestRequest request = new UpdateQuestRequest("Updated", 20.0);
+        UpdateQuestRequest request = new UpdateQuestRequest("Updated", 20.0, null);
 
-        Quest updatedQuest = new Quest(id, "Updated", 20.0);
+        Quest updatedQuest = new Quest(id, "Updated", 20.0, null);
 
         when(questService.updateQuest(eq(id), any(UpdateQuestRequest.class))).thenReturn(updatedQuest);
 

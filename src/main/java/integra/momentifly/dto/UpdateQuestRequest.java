@@ -1,9 +1,9 @@
 package integra.momentifly.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.util.UUID;
 
 public record UpdateQuestRequest(
         String description,
-        Double points
+        Double points,
+        UUID challengeId
 ) {}

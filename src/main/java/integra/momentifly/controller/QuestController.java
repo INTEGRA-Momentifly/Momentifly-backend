@@ -33,7 +33,7 @@ public class QuestController {
 
     @GetMapping
     public ResponseEntity<List<Quest>> getAllQuests() {
-        return ResponseEntity.ok(questService.getAllQuests());
+        return ResponseEntity.ok(questService.getQuestsWithoutChallenge());
     }
 
     @GetMapping("/{id}")
