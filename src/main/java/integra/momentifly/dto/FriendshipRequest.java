@@ -1,8 +1,6 @@
 package integra.momentifly.dto;
 
 import integra.momentifly.model.Status;
-import integra.momentifly.model.User;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;

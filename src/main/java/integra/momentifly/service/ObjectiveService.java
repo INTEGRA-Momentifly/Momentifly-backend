@@ -22,8 +22,9 @@ public class ObjectiveService {
     }
 
     public ObjectiveResponse addObjective(String username, WriteObjectiveRequest request) {
-        if (objectiveRepository.existsByUser_UsernameAndType(username, request.type()))
-            throw new InvalidDataException("An objective of type " + request.type() + " already exists");
+        if (objectiveRepository.existsByUser_UsernameAndType(username, request.type())) {
+          throw new InvalidDataException("An objective of type " + request.type() + " already exists");
+        }
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found"));
