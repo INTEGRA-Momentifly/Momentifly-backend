@@ -65,7 +65,6 @@ public class DataSeeder implements CommandLineRunner {
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(password);
-        user.setScore(score);
         user.setDailyCalorieGoal(dailyCalorieGoal);
         return user;
     }

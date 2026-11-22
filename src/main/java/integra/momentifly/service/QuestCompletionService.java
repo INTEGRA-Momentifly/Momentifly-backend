@@ -1,17 +1,26 @@
 package integra.momentifly.service;
 
-import integra.momentifly.model.*;
+import integra.momentifly.model.Quest;
+import integra.momentifly.model.QuestCompletion;
+import integra.momentifly.model.QuestEnum;
+import integra.momentifly.model.User;
 import integra.momentifly.repository.QuestCompletionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -134,9 +143,9 @@ public class QuestCompletionService {
 
         for (QuestCompletion completion : completions) {
             LocalDate day = dayOf(completion);
-            if (day == null) continue;
+            if (day == null) {continue;}
             daysWithQuests.add(day);
-            if (completion.getCompletionStatus() != QuestEnum.COMPLETE) daysWithOpenQuests.add(day);
+            if (completion.getCompletionStatus() != QuestEnum.COMPLETE) {daysWithOpenQuests.add(day);}
         }
 
         return daysWithQuests.stream()
@@ -155,12 +164,12 @@ public class QuestCompletionService {
         LocalDate today = LocalDate.now();
 
         if (completionDays.isEmpty() || completionDays.getFirst().isBefore(today.minusDays(1)))
-            return 0;   // no quests yet, or the last one was before yesterday
+        {return 0;}   // no quests yet, or the last one was before yesterday
 
         int streak = 1;   // the newest day counts
         for (int i = 0; i < completionDays.size() - 1; ++i) {
             if (ChronoUnit.DAYS.between(completionDays.get(i + 1), completionDays.get(i)) != 1)
-                break;
+            {break;}
             ++streak;
         }
         return streak;
