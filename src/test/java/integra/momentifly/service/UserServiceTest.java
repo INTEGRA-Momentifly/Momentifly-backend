@@ -3,6 +3,7 @@ package integra.momentifly.service;
 import integra.momentifly.dto.ChangePasswordRequest;
 import integra.momentifly.dto.CreateUserRequest;
 import integra.momentifly.exception.InvalidDataException;
+import integra.momentifly.exception.NotFoundException;
 import integra.momentifly.model.User;
 import integra.momentifly.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import integra.momentifly.exception.NotFoundException;
 
 import java.util.Optional;
 

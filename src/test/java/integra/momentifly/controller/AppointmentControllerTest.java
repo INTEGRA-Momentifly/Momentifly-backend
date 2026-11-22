@@ -1,137 +1,145 @@
 package integra.momentifly.controller;
 
+import integra.momentifly.config.SecurityConfig;
 import integra.momentifly.dto.AppointmentRequest;
 import integra.momentifly.model.Appointment;
+import integra.momentifly.model.User;
+import integra.momentifly.repository.UserRepository;
 import integra.momentifly.service.AppointmentService;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
-class AppointmentControllerTest {
+@WebMvcTest(AppointmentController.class)
+@Import(SecurityConfig.class)
+@WithMockUser(username = "Paul")
+public class AppointmentControllerTest {
 
-  @Mock
-  private AppointmentService appointmentService;
+    @Autowired
+    private WebApplicationContext context;
 
-  @InjectMocks
-  private AppointmentController appointmentController;
+    private MockMvc mockMvc;
 
-  private Appointment appointment;
-  private UUID appointmentId;
+    @MockitoBean
+    private AppointmentService appointmentService;
 
-  @BeforeEach
-  void setUp() {
-    appointmentId = UUID.randomUUID();
-    appointment = new Appointment(
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        "Consult stomatologic",
-        LocalDateTime.now().plusDays(1),
-        LocalDateTime.now().plusDays(1).plusHours(1)
-    );
-    appointment.setId(appointmentId);
-  }
+    @MockitoBean
+    private UserRepository userRepository;   // required by SecurityConfig's UserDetailsService bean
 
-  @Test
-  void testCreateAppointment() {
-    AppointmentRequest request = new AppointmentRequest();
-    request.setUserId(appointment.getUserId());
-    request.setDescription(appointment.getDescription());
-    request.setStartDate(appointment.getStartDate());
-    request.setEndDate(appointment.getEndDate());
+    private Appointment appointment;
+    private UUID appointmentId;
 
-    when(appointmentService.createAppointment(any(Appointment.class))).thenReturn(appointment);
+    private static final String REQUEST_BODY = """
+            {
+              "description": "Consult stomatologic",
+              "startDate": "2026-12-01T10:00:00",
+              "endDate": "2026-12-01T11:00:00"
+            }
+            """;
 
-    ResponseEntity<Appointment> response = appointmentController.createAppointment(request);
+    @BeforeEach
+    void setUpMockMvc() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
+    }
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(appointment, response.getBody());
-  }
+    @BeforeEach
+    void setUp() {
+        appointmentId = UUID.randomUUID();
 
-  @Test
-  void testGetAllAppointments_WithoutParams() {
-    List<Appointment> appointments = List.of(appointment);
+        User user = new User();
+        user.setUsername("Paul");
 
-    when(appointmentService.getOverlappingAppointments(null, null)).thenReturn(appointments);
+        appointment = new Appointment(
+                UUID.randomUUID(),
+                user,
+                "Consult stomatologic",
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(1).plusHours(1)
+        );
+        appointment.setId(appointmentId);
+    }
 
-    ResponseEntity<List<Appointment>> response = appointmentController.getAllAppointments(null, null);
+    @Test
+    void testCreateAppointment() throws Exception {
+        when(appointmentService.createAppointment(eq("Paul"), any(AppointmentRequest.class))).thenReturn(appointment);
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(1, response.getBody().size());
-    assertEquals(appointment, response.getBody().get(0));
-  }
+        mockMvc.perform(post("/api/appointments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(REQUEST_BODY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(appointmentId.toString()))
+                .andExpect(jsonPath("$.description").value("Consult stomatologic"));
+    }
 
-  @Test
-  void testGetAllAppointments_WithDateRange() {
-    LocalDateTime start = LocalDateTime.now();
-    LocalDateTime end = LocalDateTime.now().plusDays(2);
-    List<Appointment> appointments = List.of(appointment);
+    @Test
+    void testGetAllAppointments() throws Exception {
+        List<Appointment> appointments = Arrays.asList(appointment);
+        when(appointmentService.getAppointmentsForUser("Paul")).thenReturn(appointments);
 
-    when(appointmentService.getOverlappingAppointments(start, end)).thenReturn(appointments);
+        mockMvc.perform(get("/api/appointments")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
+                .andExpect(jsonPath("$[0].description").value("Consult stomatologic"));
+    }
 
-    ResponseEntity<List<Appointment>> response = appointmentController.getAllAppointments(start, end);
+    @Test
+    void testGetAppointmentById() throws Exception {
+        when(appointmentService.getAppointmentById(appointmentId, "Paul")).thenReturn(appointment);
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(1, response.getBody().size());
-  }
+        mockMvc.perform(get("/api/appointments/{id}", appointmentId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(appointmentId.toString()));
+    }
 
-  @Test
-  void testGetAppointmentById_WhenExists() {
-    when(appointmentService.getAppointmentById(appointmentId)).thenReturn(Optional.of(appointment));
+    @Test
+    void testUpdateAppointment() throws Exception {
+        when(appointmentService.updateAppointment(eq(appointmentId), eq("Paul"), any(AppointmentRequest.class))).thenReturn(appointment);
 
-    ResponseEntity<Appointment> response = appointmentController.getAppointmentById(appointmentId);
+        mockMvc.perform(put("/api/appointments/{id}", appointmentId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(REQUEST_BODY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value("Consult stomatologic"));
+    }
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(appointment, response.getBody());
-  }
+    @Test
+    void testDeleteAppointment() throws Exception {
+        doNothing().when(appointmentService).deleteAppointment(appointmentId, "Paul");
 
-  @Test
-  void testGetAppointmentById_WhenNotFound() {
-    when(appointmentService.getAppointmentById(appointmentId)).thenReturn(Optional.empty());
-
-    ResponseEntity<Appointment> response = appointmentController.getAppointmentById(appointmentId);
-
-    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-  }
-
-  @Test
-  void testUpdateAppointment() {
-    AppointmentRequest request = new AppointmentRequest();
-    request.setUserId(appointment.getUserId());
-    request.setDescription(appointment.getDescription());
-    request.setStartDate(appointment.getStartDate());
-    request.setEndDate(appointment.getEndDate());
-
-    when(appointmentService.updateAppointment(eq(appointmentId), any(Appointment.class)))
-        .thenReturn(appointment);
-
-    ResponseEntity<Appointment> response = appointmentController.updateAppointment(appointmentId, request);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(appointment, response.getBody());
-  }
-
-  @Test
-  void testDeleteAppointment() {
-    doNothing().when(appointmentService).deleteAppointment(appointmentId);
-
-    ResponseEntity<Void> response = appointmentController.deleteAppointment(appointmentId);
-
-    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-  }
+        mockMvc.perform(delete("/api/appointments/{id}", appointmentId)
+                        .with(csrf()))
+                .andExpect(status().isNoContent());
+    }
 }
