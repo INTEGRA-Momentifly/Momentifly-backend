@@ -6,16 +6,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @NoArgsConstructor
 @Getter
 @Setter
 public class UpdateSubscriptionRequest {
-
-    //  Lăsat fără @NotNull temporar, sau menținut dacă frontend-ul trimite deja un ID valid
-    private UUID userId;
-
     @NotNull
     private double cost;
 
