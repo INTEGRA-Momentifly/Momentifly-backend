@@ -1,5 +1,6 @@
 package integra.momentifly.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -27,6 +28,7 @@ public class Subscription {
 
     @ManyToOne(fetch=FetchType.LAZY, optional = true)
     @JoinColumn(name="user_id", nullable = true)
+    @JsonIgnore
     private User user;
 
     @Column(nullable = false)

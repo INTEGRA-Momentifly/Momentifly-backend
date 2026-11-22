@@ -58,6 +58,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
     testImplementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    testImplementation("org.springframework.security:spring-security-test")
 }
 
 tasks.withType<Test> {
