@@ -15,7 +15,11 @@ public class EmailService {
   private final MailtrapClient mailtrapClient;
   private final String senderEmail;
 
-  public EmailService( @Value("${mailtrap.api.token}") String token, @Value("${mailtrap.sandbox.inbox-id}") Long inboxId, @Value("${mailtrap.sender.email}") String senderEmail) {
+  public EmailService(
+      @Value("${mailtrap.api.token:dummy-test-token}") String token,
+      @Value("${mailtrap.sandbox.inbox-id}") Long inboxId,
+      @Value("${mailtrap.sender.email}") String senderEmail
+  ) {
     MailtrapConfig config = new MailtrapConfig.Builder()
         .token(token)
         .sandbox(true)
