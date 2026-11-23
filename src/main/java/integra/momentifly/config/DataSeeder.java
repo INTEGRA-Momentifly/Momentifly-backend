@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -39,7 +40,7 @@ public class DataSeeder implements CommandLineRunner {
 
         List<User> users = userRepository.findAll();
 
-        seedQuests();
+        seedQuests(users);
         seedTasks(users);
         seedReminders(users);
         seedSubscriptions(users);
@@ -71,24 +72,28 @@ public class DataSeeder implements CommandLineRunner {
 
     // ---------- QUESTS ----------
 
-    private void seedQuests() {
+    private void seedQuests(List<User> users) {
         if (questRepository.count() > 0) {
             return;
         }
-        questRepository.saveAll(List.of(
-                newQuest("Drink a full glass of water within 30 minutes of waking up.", 10),
-                newQuest("Walk at least 8,000 steps today.", 20),
-                newQuest("Eat at least 3 servings of vegetables today.", 30),
-                newQuest("Finish the day within your daily calorie goal.", 40),
-                newQuest("Do 30 minutes of any physical activity", 30),
-                newQuest("Log all your meals today, including snacks.", 25),
-                newQuest("Go the whole day without sugary drinks or desserts.", 30),
-                newQuest("Complete at least one quest every day for 7 days in a row.", 100)
-        ));
+
+        for (User user : users){
+            questRepository.saveAll(List.of(
+                    newQuest(user.getId(), "Drink a full glass of water within 30 minutes of waking up.", 10),
+                    newQuest(user.getId(), "Walk at least 8,000 steps today.", 20),
+                    newQuest(user.getId(), "Eat at least 3 servings of vegetables today.", 30),
+                    newQuest(user.getId(), "Finish the day within your daily calorie goal.", 40),
+                    newQuest(user.getId(), "Do 30 minutes of any physical activity", 30),
+                    newQuest(user.getId(), "Log all your meals today, including snacks.", 25),
+                    newQuest(user.getId(), "Go the whole day without sugary drinks or desserts.", 30),
+                    newQuest(user.getId(), "Complete at least one quest every day for 7 days in a row.", 100)
+            ));
+        }
     }
 
-    private Quest newQuest(String description, int points) {
+    private Quest newQuest(UUID userId, String description, int points) {
         Quest quest = new Quest();
+        quest.setUserId(userId);
         quest.setDescription(description);
         quest.setPoints(points);
         return quest;
