@@ -1,6 +1,5 @@
 package integra.momentifly.config;
 
-import integra.momentifly.model.Appointment;
 import integra.momentifly.model.Difficulty;
 import integra.momentifly.model.Quest;
 import integra.momentifly.model.RecurrenceEnum;
@@ -8,7 +7,6 @@ import integra.momentifly.model.Reminder;
 import integra.momentifly.model.Subscription;
 import integra.momentifly.model.Task;
 import integra.momentifly.model.User;
-import integra.momentifly.repository.AppointmentRepository;
 import integra.momentifly.repository.QuestRepository;
 import integra.momentifly.repository.ReminderRepository;
 import integra.momentifly.repository.SubscriptionRepository;
@@ -21,6 +19,10 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -127,7 +129,7 @@ public class DataSeeder implements CommandLineRunner {
 
   private Task newTask(UUID user, String description, LocalDate dueDate, Difficulty difficulty) {
     Task task = new Task();
-    task.setUserId(user);
+    task.setId(user);
     task.setDescription(description);
     task.setDueDate(dueDate);
     task.setDifficulty(difficulty);
@@ -153,7 +155,7 @@ public class DataSeeder implements CommandLineRunner {
 
   private Reminder newReminder(UUID user, String description, LocalDateTime date, RecurrenceEnum recurrence) {
     Reminder reminder = new Reminder();
-    reminder.setUserId(user);
+    reminder.setId(user);
     reminder.setDescription(description);
     reminder.setReminderDate(date);
     reminder.setDone(false);
