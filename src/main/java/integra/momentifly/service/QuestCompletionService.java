@@ -1,9 +1,9 @@
 package integra.momentifly.service;
 
-import integra.momentifly.model.Quest;
 import integra.momentifly.model.QuestCompletion;
-import integra.momentifly.model.QuestEnum;
 import integra.momentifly.model.User;
+import integra.momentifly.model.Quest;
+import integra.momentifly.model.QuestEnum;
 import integra.momentifly.repository.QuestCompletionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;

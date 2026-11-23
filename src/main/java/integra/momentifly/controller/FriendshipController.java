@@ -33,6 +33,19 @@ public class FriendshipController {
   private final FriendshipMapper friendshipMapper;
   private final UserService userService;
 
+  @GetMapping("/requests")
+  public List<FriendshipResponse> getFriendshipRequests(Authentication authentication){
+    UUID userId = userService.getUserByUsername(authentication.getName()).getId();
+
+    List<Friendship> friends = new ArrayList<>();
+
+    friends = friendshipService.getFriendsByFriendIdAndStatus(userId, Status.PENDING);
+
+    return friends.stream()
+        .map(friendshipMapper::toDto)
+        .toList();
+  }
+
   @GetMapping()
   public List<FriendshipResponse> getFriendsByStatus(Authentication authentication, @RequestParam(required = false) Status status) {
 
@@ -50,10 +63,11 @@ public class FriendshipController {
   }
 
   @PostMapping
-  public ResponseEntity<FriendshipResponse> addFriendship(Authentication authentication, @RequestParam UUID friendId) {
+  public ResponseEntity<FriendshipResponse> addFriendship(Authentication authentication, @RequestParam String friendName) {
 
     UUID userId = userService.getUserByUsername(authentication.getName()).getId();
-    if (userId.equals(friendId)) {
+    UUID friendId = userService.getUserByUsername(friendName).getId();
+    if (userId.equals(friendId) && friendId != null) {
       return ResponseEntity.badRequest().build();
     }
 

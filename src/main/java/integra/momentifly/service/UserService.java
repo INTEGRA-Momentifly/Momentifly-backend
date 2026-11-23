@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 import java.util.List;
 
@@ -34,6 +35,10 @@ public class UserService {
     public User createUser(CreateUserRequest userRequest) {
         if (userRepository.existsByUsername(userRequest.username())) {
             throw new InvalidDataException("Username already taken");
+        }
+
+        if (userRepository.existsByEmail(userRequest.email())) {
+            throw new InvalidDataException("Email is already registered");
         }
 
         if (userRepository.existsByEmail(userRequest.email())) {

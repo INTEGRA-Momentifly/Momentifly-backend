@@ -1,6 +1,8 @@
 package integra.momentifly.repository;
 
 import integra.momentifly.model.Quest;
+import integra.momentifly.model.Reminder;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;

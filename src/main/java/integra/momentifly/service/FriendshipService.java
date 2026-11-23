@@ -19,12 +19,17 @@ public class FriendshipService {
 
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public List<Friendship> getFriendsByStatus(UUID userId, Status status) {
         return friendshipRepository.findByUserIdAndStatusOrFriendIdAndStatus(
                 userId, status,
                 userId, status
         );
+    }
+
+    public  List<Friendship> getFriendsByFriendIdAndStatus(UUID friendId, Status status){
+      return friendshipRepository.findByFriendIdAndStatus(friendId,status);
     }
 
     public List<Friendship> findByUserId(UUID userId){
@@ -55,6 +60,8 @@ public class FriendshipService {
         if (userOpt.isEmpty() || friendOpt.isEmpty()) {
             return Optional.empty();
         }
+
+        emailService.sendFriendRequestEmail(friendOpt.get().getEmail(), userOpt.get().getUsername());
 
         Friendship friendship = new Friendship();
         friendship.setUser(userOpt.get());
