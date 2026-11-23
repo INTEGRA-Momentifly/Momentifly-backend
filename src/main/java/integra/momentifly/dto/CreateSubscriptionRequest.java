@@ -6,17 +6,24 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @NoArgsConstructor
 @Getter
 @Setter
 public class CreateSubscriptionRequest {
-    @NotNull
-    private double cost;
+  @NotNull
+  private UUID userId;
 
-    @NotNull
-    private String name;
+  @NotNull
+  private double cost;
 
-    @NotNull
-    private LocalDateTime endDate;
+  @NotNull
+  private String name;
+
+  @NotNull
+  private boolean autoRenewal;
+
+  @NotNull
+  private LocalDateTime endDate;
 }

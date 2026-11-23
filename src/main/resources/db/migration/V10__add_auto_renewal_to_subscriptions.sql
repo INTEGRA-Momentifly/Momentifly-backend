@@ -1,0 +1,2 @@
+ALTER TABLE subscription
+  ADD COLUMN auto_renewal BOOLEAN NOT NULL DEFAULT TRUE;
