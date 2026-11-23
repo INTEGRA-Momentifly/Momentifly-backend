@@ -1,5 +1,6 @@
 package integra.momentifly.config;
 
+import integra.momentifly.model.Appointment;
 import integra.momentifly.model.Difficulty;
 import integra.momentifly.model.Quest;
 import integra.momentifly.model.RecurrenceEnum;
@@ -7,6 +8,7 @@ import integra.momentifly.model.Reminder;
 import integra.momentifly.model.Subscription;
 import integra.momentifly.model.Task;
 import integra.momentifly.model.User;
+import integra.momentifly.repository.AppointmentRepository;
 import integra.momentifly.repository.QuestRepository;
 import integra.momentifly.repository.ReminderRepository;
 import integra.momentifly.repository.SubscriptionRepository;
@@ -19,10 +21,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor

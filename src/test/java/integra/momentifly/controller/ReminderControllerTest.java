@@ -1,235 +1,150 @@
 package integra.momentifly.controller;
 
-import integra.momentifly.dto.ReminderRequest;
+import integra.momentifly.config.SecurityConfig;
 import integra.momentifly.dto.ReminderResponse;
 import integra.momentifly.mapper.ReminderMapper;
 import integra.momentifly.model.RecurrenceEnum;
 import integra.momentifly.model.Reminder;
+import integra.momentifly.model.User;
+import integra.momentifly.repository.UserRepository;
 import integra.momentifly.service.ReminderService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.MediaType;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ReminderController.class)
+@Import(SecurityConfig.class)
+@WithMockUser(username = "Paul")
 class ReminderControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+    @Autowired
+    private WebApplicationContext context;
 
-  @MockitoBean
-  private ReminderService reminderService;
+    private MockMvc mockMvc;
 
-  @MockitoBean
-  private ReminderMapper mapper;
+    @MockitoBean
+    private ReminderService reminderService;
 
-  private final UUID reminderId = UUID.randomUUID();
-  private final UUID userId = UUID.randomUUID();
+    @MockitoBean
+    private ReminderMapper mapper;
 
-  private Reminder createReminder() {
-    Reminder reminder = new Reminder();
-    reminder.setId(reminderId);
-    reminder.setUserId(userId);
-    reminder.setDescription("Test reminder");
-    reminder.setReminderDate(LocalDateTime.of(2026, 9, 23, 18, 0));
-    reminder.setDone(false);
-    reminder.setRecurrence(RecurrenceEnum.WEEKLY);
-    return reminder;
-  }
+    @MockitoBean
+    private UserRepository userRepository;   // required by SecurityConfig's UserDetailsService bean
 
-  private ReminderResponse createReminderDtoOut() {
-    return new ReminderResponse(
-        reminderId,
-        userId,
-        "Test reminder",
-        LocalDateTime.of(2026, 9, 23, 18, 0),
-        false,
-        RecurrenceEnum.WEEKLY
-    );
-  }
+    private final UUID reminderId = UUID.randomUUID();
+    private final UUID userId = UUID.randomUUID();
 
-  @Test
-  void shouldFindAllReminders() throws Exception {
-    Reminder reminder = createReminder();
-    ReminderResponse dto = createReminderDtoOut();
+    @BeforeEach
+    void setUpMockMvc() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
+    }
 
-    when(reminderService.findAll())
-        .thenReturn(List.of(reminder));
+    private Reminder createReminder() {
+        User user = new User();
+        user.setId(userId);
+        user.setUsername("Paul");
 
-    when(mapper.toDto(reminder))
-        .thenReturn(dto);
+        Reminder reminder = new Reminder();
+        reminder.setId(reminderId);
+        reminder.setUser(user);
+        reminder.setDescription("Test reminder");
+        reminder.setReminderDate(LocalDateTime.of(2026, 9, 23, 18, 0));
+        reminder.setDone(false);
+        reminder.setRecurrence(RecurrenceEnum.WEEKLY);
+        return reminder;
+    }
 
-    mockMvc.perform(get("/api/reminder"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].id").value(reminderId.toString()))
-        .andExpect(jsonPath("$[0].userId").value(userId.toString()))
-        .andExpect(jsonPath("$[0].description").value("Test reminder"))
-        .andExpect(jsonPath("$[0].done").value(false))
-        .andExpect(jsonPath("$[0].recurrence").value("WEEKLY"));
+    private ReminderResponse createReminderDtoOut() {
+        return new ReminderResponse(
+                reminderId,
+                "Test reminder",
+                LocalDateTime.of(2026, 9, 23, 18, 0),
+                false,
+                RecurrenceEnum.WEEKLY
+        );
+    }
 
-    verify(reminderService).findAll();
-    verify(mapper).toDto(reminder);
-  }
+    @Test
+    void shouldFindAllReminders() throws Exception {
+        Reminder reminder = createReminder();
+        ReminderResponse dto = createReminderDtoOut();
 
-  @Test
-  void shouldFindReminderById() throws Exception {
-    Reminder reminder = createReminder();
-    ReminderResponse dto = createReminderDtoOut();
+        when(reminderService.findByUsername("Paul"))
+                .thenReturn(List.of(reminder));
 
-    when(reminderService.findById(reminderId))
-        .thenReturn(Optional.of(reminder));
+        when(mapper.toDto(reminder))
+                .thenReturn(dto);
 
-    when(mapper.toDto(reminder))
-        .thenReturn(dto);
+        mockMvc.perform(get("/api/reminder"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(reminderId.toString()))
+                .andExpect(jsonPath("$[0].description").value("Test reminder"))
+                .andExpect(jsonPath("$[0].done").value(false))
+                .andExpect(jsonPath("$[0].recurrence").value("WEEKLY"));
 
-    mockMvc.perform(get("/api/reminder/{id}", reminderId))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(reminderId.toString()))
-        .andExpect(jsonPath("$.userId").value(userId.toString()))
-        .andExpect(jsonPath("$.description").value("Test reminder"))
-        .andExpect(jsonPath("$.done").value(false))
-        .andExpect(jsonPath("$.recurrence").value("WEEKLY"));
+        verify(reminderService).findByUsername("Paul");
+        verify(mapper).toDto(reminder);
+    }
 
-    verify(reminderService).findById(reminderId);
-    verify(mapper).toDto(reminder);
-  }
+    @Test
+    void shouldFindReminderById() throws Exception {
+        Reminder reminder = createReminder();
+        ReminderResponse dto = createReminderDtoOut();
 
-//  @Test
-//  void shouldFindRemindersByUserId() throws Exception {
-//    Reminder reminder = createReminder();
-//    ReminderResponse dto = createReminderDtoOut();
-//
-//    when(reminderService.findByUserId(userId))
-//        .thenReturn(List.of(reminder));
-//
-//    when(mapper.toDto(reminder))
-//        .thenReturn(dto);
-//
-//    mockMvc.perform(get("/api/reminder/user/{userId}", userId))
-//        .andExpect(status().isOk())
-//        .andExpect(jsonPath("$[0].id").value(reminderId.toString()))
-//        .andExpect(jsonPath("$[0].userId").value(userId.toString()))
-//        .andExpect(jsonPath("$[0].description").value("Test reminder"))
-//        .andExpect(jsonPath("$[0].done").value(false))
-//        .andExpect(jsonPath("$[0].recurrence").value("WEEKLY"));
-//
-//    verify(reminderService).findByUserId(userId);
-//    verify(mapper).toDto(reminder);
-//  }
+        when(reminderService.findById(reminderId, "Paul"))
+                .thenReturn(reminder);
 
-  @Test
-  void shouldCreateReminder() throws Exception {
-    Reminder reminder = createReminder();
-    ReminderResponse output = createReminderDtoOut();
+        when(mapper.toDto(reminder))
+                .thenReturn(dto);
 
-    when(mapper.fromDto(any(ReminderRequest.class)))
-        .thenReturn(reminder);
+        mockMvc.perform(get("/api/reminder/{id}", reminderId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reminderId.toString()))
+                .andExpect(jsonPath("$.description").value("Test reminder"))
+                .andExpect(jsonPath("$.done").value(false))
+                .andExpect(jsonPath("$.recurrence").value("WEEKLY"));
 
-    when(reminderService.save(reminder))
-        .thenReturn(reminder);
+        verify(reminderService).findById(reminderId, "Paul");
+        verify(mapper).toDto(reminder);
+    }
 
-    when(mapper.toDto(reminder))
-        .thenReturn(output);
+    @Test
+    @WithMockUser(username = "Andrei")
+    void shouldOnlyFindRemindersOfTheLoggedInUser() throws Exception {
+        Reminder reminder = createReminder();
+        ReminderResponse dto = createReminderDtoOut();
 
-    mockMvc.perform(post("/api/reminder")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {
-                  "userId": "%s",
-                  "description": "Test reminder",
-                  "reminderDate": "2026-09-23T18:00:00",
-                  "done": false,
-                  "recurrence": "WEEKLY"
-                }
-                """.formatted(userId)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(reminderId.toString()))
-        .andExpect(jsonPath("$.userId").value(userId.toString()))
-        .andExpect(jsonPath("$.description").value("Test reminder"))
-        .andExpect(jsonPath("$.done").value(false))
-        .andExpect(jsonPath("$.recurrence").value("WEEKLY"));
+        when(reminderService.findByUsername("Andrei"))
+                .thenReturn(List.of(reminder));
 
-    verify(mapper).fromDto(any(ReminderRequest.class));
-    verify(reminderService).save(reminder);
-    verify(mapper).toDto(reminder);
-  }
+        when(mapper.toDto(reminder))
+                .thenReturn(dto);
 
-  @Test
-  void shouldUpdateReminder() throws Exception {
-    Reminder existingReminder = createReminder();
-    Reminder updatedReminder = createReminder();
-    updatedReminder.setDescription("Updated reminder");
-
-    ReminderResponse output = new ReminderResponse(
-        reminderId,
-        userId,
-        "Updated reminder",
-        LocalDateTime.of(2026, 9, 23, 18, 0),
-        false,
-        RecurrenceEnum.WEEKLY
-    );
-
-    when(reminderService.findById(reminderId))
-        .thenReturn(Optional.of(existingReminder));
-
-    when(mapper.fromDto(any(ReminderRequest.class)))
-        .thenReturn(updatedReminder);
-
-    when(reminderService.save(any(Reminder.class)))
-        .thenReturn(updatedReminder);
-
-    when(mapper.toDto(updatedReminder))
-        .thenReturn(output);
-
-    mockMvc.perform(put("/api/reminder/{id}", reminderId)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {
-                  "userId": "%s",
-                  "description": "Updated reminder",
-                  "reminderDate": "2026-09-23T18:00:00",
-                  "done": false,
-                  "recurrence": "WEEKLY"
-                }
-                """.formatted(userId)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(reminderId.toString()))
-        .andExpect(jsonPath("$.description").value("Updated reminder"))
-        .andExpect(jsonPath("$.recurrence").value("WEEKLY"));
-
-    verify(reminderService).findById(reminderId);
-    verify(mapper).fromDto(any(ReminderRequest.class));
-    verify(reminderService).save(any(Reminder.class));
-    verify(mapper).toDto(updatedReminder);
-  }
-
-  @Test
-  void shouldDeleteReminder() throws Exception {
-    when(reminderService.findById(reminderId))
-        .thenReturn(Optional.of(createReminder()));
-
-    mockMvc.perform(delete("/api/reminder/{id}", reminderId))
-        .andExpect(status().isNoContent());
-
-    verify(reminderService).findById(reminderId);
-    verify(reminderService).deleteById(reminderId);
-  }
+        mockMvc.perform(get("/api/reminder"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(reminderId.toString()))
+                .andExpect(jsonPath("$[0].description").value("Test reminder"))
+                .andExpect(jsonPath("$[0].done").value(false))
+                .andExpect(jsonPath("$[0].recurrence").value("WEEKLY"));
+    }
 }

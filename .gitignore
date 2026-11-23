@@ -1,4 +1,9 @@
 HELP.md
+# for api key
+.env
+.env.*
+!.env.example
+
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -35,3 +40,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Local Environment / Secrets ###
+.env
