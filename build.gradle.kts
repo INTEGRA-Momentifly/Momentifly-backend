@@ -59,6 +59,8 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
     testImplementation("com.fasterxml.jackson.core:jackson-databind")
+
+    implementation("io.mailtrap:mailtrap-java:1.10.0")
 }
 
 tasks.withType<Test> {
