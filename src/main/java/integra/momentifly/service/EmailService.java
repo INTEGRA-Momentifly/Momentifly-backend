@@ -16,7 +16,7 @@ public class EmailService {
   private final String senderEmail;
 
   public EmailService(
-      @Value("${mailtrap.api.token:dummy-test-token}") String token,
+      @Value("${mailtrap.api.token}") String token,
       @Value("${mailtrap.sandbox.inbox-id}") Long inboxId,
       @Value("${mailtrap.sender.email}") String senderEmail
   ) {
