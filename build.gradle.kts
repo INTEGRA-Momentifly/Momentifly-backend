@@ -26,6 +26,8 @@ checkstyle {
 }
 
 dependencies {
+    implementation("com.openai:openai-java:4.107.0")
+
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -57,10 +59,8 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
     testImplementation("com.fasterxml.jackson.core:jackson-databind")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
 
     implementation("io.mailtrap:mailtrap-java:1.10.0")
-
 }
 
 tasks.withType<Test> {
